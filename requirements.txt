@@ -1,0 +1,13 @@
+# Runtime deps for the deployed dashboard (app_v2.py). Lean on purpose — no chromadb, no
+# transformers (the audit panel loads tokenizer.json via the lightweight `tokenizers` lib).
+# Full reproduction env (training/analysis) is in requirements-lock.txt.
+# CPU-only torch (Hugging Face Spaces free tier is CPU; avoids the ~2GB CUDA wheel).
+--extra-index-url https://download.pytorch.org/whl/cpu
+streamlit==1.59.2
+plotly==6.9.0
+torch==2.13.0+cpu
+numpy==2.5.1
+pandas==3.0.3
+regex==2026.7.10
+tiktoken==0.13.0
+tokenizers==0.22.2
