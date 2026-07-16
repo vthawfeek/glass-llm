@@ -8,7 +8,7 @@ For the last few weeks I've been building a language model on clinical-trial tex
 
 Try it: <SPACE_URL>
 Write-up: <BLOG_URL>
-Code: <REPO_URL>
+Code: https://github.com/vthawfeek/glass-llm
 
 Five controls (data domain, data volume, attention heads, fine-tuning, retrieval) each reshape the model in front of you. Two things I'm most pleased with, because they're honest about the limits.
 

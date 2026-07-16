@@ -55,6 +55,6 @@ Overclaiming is how these projects lose credibility, so let me be plain. Interac
 
 ## Reproduce it
 
-The code (<REPO_URL>) runs end to end: pull ClinicalTrials.gov, train the tokenizer, train the model zoo, warm the audit tokenizers, launch the dashboard. Seeds are fixed and configs are logged.
+The code (https://github.com/vthawfeek/glass-llm) runs end to end: pull ClinicalTrials.gov, train the tokenizer, train the model zoo, warm the audit tokenizers, launch the dashboard. Seeds are fixed and configs are logged.
 
 Open the glass box: <SPACE_URL>
