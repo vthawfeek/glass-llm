@@ -44,3 +44,6 @@ run_zoo_v3.sh
 # KEPT (runtime for app_v2.py): app_v2.py; src/{bpe,model,glass,audit,rag,ui,ui2,biomarker,
 # train,fetch_data,warm_tokenizers,build_zoo}.py; models_v2/*.pt; pilot/tokenizers/*.json;
 # pilot/rag_dom/*; assets/**; content/*; tests/*; requirements*.txt; README.md; DEPLOY.md
+
+# superseded v1 tokenizer (dom_4096 replaces it); kept locally for the git-ignored v1 scripts
+pilot/tokenizers/domain_4096.json

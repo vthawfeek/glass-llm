@@ -16,7 +16,9 @@ from bpe import BPETokenizer
 # name -> (kind, spec).  Order defines dropdown order.
 REGISTRY = {
     "Ours · clinical trials (domain)": ("ours", "dom_4096"),
-    "Ours · domain (clinical)": ("ours", "domain_4096"),
+    # NB: `domain_4096` (the v1 tokenizer) is deliberately absent. It is superseded by `dom_4096`,
+    # which is what build_zoo.py trains and every models_v2 checkpoint uses. Listing both put two
+    # near-identically-labelled entries in the dropdown that disagreed (pembrolizumab: 4 vs 2).
     "Ours · general (English)": ("ours", "general_4096"),
     "GPT-4 / GPT-3.5 (cl100k)": ("tiktoken", "cl100k_base"),
     "GPT-4o (o200k)":           ("tiktoken", "o200k_base"),
