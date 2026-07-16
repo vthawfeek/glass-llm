@@ -13,7 +13,7 @@ Before any model reasons about text, it splits it into tokens. I ran cancer-drug
 
 Cost and context are simple facts. You pay per token and your context window is counted in tokens. On a full eligibility criterion, my domain tokenizer used 30 tokens against 55 for a general-English tokenizer of the same vocabulary size: roughly 45% cheaper, with more room for real content.
 
-"Domain always wins" is wrong, and it's worth being exact about that. GPT-4's 100k-plus vocabulary is genuinely competitive. On a mixed probe set it averaged 4.75 tokens per term against my domain tokenizer's 5.75. A big vocabulary buys back most of the specialised advantage. The clean, controlled result is domain against general at equal vocab (about 20-45% fewer tokens). It is not "beats GPT-4".
+"Domain always wins" is wrong, and it's worth being exact about that. GPT-4's 100k-plus vocabulary is genuinely competitive. On a 90-term mixed probe set it averaged 4.22 tokens per term against my domain tokenizer's 4.94. A big vocabulary buys back most of the specialised advantage. The clean, controlled result is domain against general at equal vocab (about 20-45% fewer tokens). It is not "beats GPT-4".
 
 And quality is a flag, not a verdict. Heavy fragmentation is a risk to test for rare terms and exact-match tasks. It is not proof that the model understands the term worse, because large models absorb a lot of it.
 
