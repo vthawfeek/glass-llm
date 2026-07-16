@@ -1,10 +1,11 @@
 ---
 title: Glass LLM
 emoji: 🧬
-colorFrom: teal
+colorFrom: green
 colorTo: red
 sdk: docker
 app_port: 8501
+short_description: A glass box for LLMs on clinical-trial text
 pinned: false
 license: mit
 ---
