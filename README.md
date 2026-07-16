@@ -3,9 +3,8 @@ title: Glass LLM
 emoji: 🧬
 colorFrom: teal
 colorTo: red
-sdk: streamlit
-sdk_version: 1.59.2
-app_file: app_v2.py
+sdk: docker
+app_port: 8501
 pinned: false
 license: mit
 ---

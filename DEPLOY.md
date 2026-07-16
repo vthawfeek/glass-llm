@@ -1,9 +1,24 @@
-# Deploying Glass-LLM (app_v2) to Hugging Face Spaces
+# Deploying Glass-LLM (app_v2)
 
-The dashboard runs on the free **CPU** tier (the model is tiny). These are the exact steps —
-you run them under your own Hugging Face account. **Vercel/Netlify won't work**: Streamlit is a
-long-running Python server with WebSockets, not a static/serverless site. HF Spaces (or Streamlit
-Community Cloud) is the right host.
+**Vercel/Netlify won't work**: Streamlit is a long-running Python server with WebSockets, not a
+static/serverless site. HF Spaces or Streamlit Community Cloud is the right host.
+
+> ## ⚠️ Two Hugging Face platform changes (verified against the live API, 2026-07-17)
+>
+> This document originally said "SDK: Streamlit, hardware: CPU basic (free)". **Neither is
+> available any more:**
+>
+> 1. **`sdk: streamlit` is rejected for new Spaces.** The create API accepts only
+>    `gradio`, `docker`, or `static`. Existing Streamlit Spaces are grandfathered and still run,
+>    but you cannot make a new one. A Streamlit app must now ship as a **Docker** Space —
+>    hence the `Dockerfile` at the repo root and `sdk: docker` / `app_port: 8501` in `README.md`.
+> 2. **The free `cpu-basic` tier no longer covers Docker/Gradio Spaces.** The API returns
+>    `402 Payment Required`: *"Static Spaces are free for everyone, but hosting Gradio and Docker
+>    Spaces on free cpu-basic requires a PRO subscription."* Static Spaces can't run a Python
+>    server, so they're not an option here.
+>
+> **So an HF Space now requires [HF PRO](https://huggingface.co/pro) (~$9/month).** The free
+> alternative is **Streamlit Community Cloud** (below), which deploys straight from the GitHub repo.
 
 ## 0. What ships (and what doesn't)
 The deployed app (`app_v2.py`) reads only:
@@ -20,31 +35,36 @@ backups/temp dirs (`models_v2_old/`, `pilot/rag_dom_old/`, `models_v2_new/`) —
 
 > The old `app.py`, the v1 pilot artifacts (`pilot/RESULTS.md`, `pilot/models/`, `pilot/rag/`,
 > `pilot/results/`), the old-pilot scripts, and the helper `.sh` files are **git-ignored** (see
-> `.gitignore`), so the repo ships **only** the v2 dashboard. The Space runs whatever `app_file:`
-> points to in `README.md` (now `app_v2.py`).
+> `.gitignore`), so the repo ships **only** the v2 dashboard. On a Docker Space the entrypoint is
+> the `CMD` in the `Dockerfile` (`streamlit run app_v2.py`), not the `app_file:` README key —
+> that key only applies to the native `gradio` SDK.
 
 ## 1. Prerequisites
-- A Hugging Face account + a [write access token](https://huggingface.co/settings/tokens).
-- `git` installed. (No Git LFS needed — every shipped file is < 10 MB.)
+- The code is on GitHub: **https://github.com/vthawfeek/glass-llm** (pushed 2026-07-16).
+- `git` installed. (No Git LFS needed — every shipped file is < 10 MB; 80 MB total.)
 
-## 2. Create the Space
-huggingface.co → **New Space** → SDK: **Streamlit** → hardware: **CPU basic (free)**.
-Name it e.g. `glass-llm`. Git remote: `https://huggingface.co/spaces/<you>/glass-llm`.
+## Option A — Hugging Face Space (needs PRO)
+1. Subscribe to [HF PRO](https://huggingface.co/pro), then create a
+   [write token](https://huggingface.co/settings/tokens).
+2. huggingface.co → **New Space** → SDK: **Docker** → hardware: **CPU basic**.
+   Name it `glass-llm`. Remote: `https://huggingface.co/spaces/<you>/glass-llm`.
+3. Push (the repo already has the Dockerfile and the right `README.md` frontmatter):
+   ```bash
+   cd glass_LLM
+   git remote add space https://huggingface.co/spaces/<you>/glass-llm
+   git push space main            # prompts for your HF token
+   ```
+   The Space builds the `Dockerfile` (CPU torch) and serves `app_v2.py` on port 8501.
 
-## 3. Sanity-check what will be committed, then push
-```bash
-cd glass_LLM
-git init && git add .
-git status --short | grep -E "data_dom|data_gen|_cache|_old|_new" && echo "^ these should NOT appear"
-# (nothing should print above; if it does, they aren't ignored — fix .gitignore first)
-git commit -m "Glass-LLM dashboard (app_v2: five-dial glass box)"
-git remote add space https://huggingface.co/spaces/<you>/glass-llm
-git push space main            # you'll be prompted for your HF token
-```
-The Space auto-builds from `requirements.txt` (lean, CPU torch) and launches `app_v2.py`.
+## Option B — Streamlit Community Cloud (free)
+[share.streamlit.io](https://share.streamlit.io) → sign in with GitHub → **New app** →
+repo `vthawfeek/glass-llm`, branch `main`, main file `app_v2.py`. It installs
+`requirements.txt` and hosts it free. The `Dockerfile` and the `README.md` frontmatter are
+simply ignored there, so the repo supports both options unchanged.
 
-## 4. Verify (the checklist that matters)
-- [ ] Build succeeds (watch the Space **Logs** tab; CPU torch keeps it well under limits).
+## 2. Verify (the checklist that matters)
+- [ ] Build succeeds. The `Dockerfile` has **not** been build-tested locally (no Docker on the dev
+      machine) — watch the **Logs** tab on the first deploy.
 - [ ] The **left sidebar** shows five dropdowns; changing any of them re-renders the panels.
 - [ ] Panels are numbered **1–5 continuously** (panel 4 shows even when Fine-tuned = No).
 - [ ] **Tokenizer audit tab works** — this confirms the offline tokenizer cache shipped correctly
@@ -53,9 +73,12 @@ The Space auto-builds from `requirements.txt` (lean, CPU torch) and launches `ap
 - [ ] With **Fine-tuned = Yes** on the Domain model, biomarker tokens are highlighted.
 - [ ] The SYNTHETIC watermark is visible.
 
-## 5. Add the link
-Put the Space URL at the top of `README.md`, and fill the `<SPACE_URL>` / `<BLOG_URL>` /
-`<REPO_URL>` placeholders in `content/*.md` before posting.
+## 3. Add the link
+Put the live URL at the top of `README.md`, then fill the remaining `<SPACE_URL>` (in
+`content/blog2.md` ×2 and `content/post4_linkedin.md`) and `<BLOG_URL>` (in
+`content/post4_linkedin.md`) placeholders before posting. `<REPO_URL>` is already filled in.
+`post4_linkedin.md`'s own gate — *"live link works before posting"* — is the reason the blogs
+wait on the deploy rather than the other way round.
 
 ## Troubleshooting
 - **Audit tab errors on the Space:** `assets/` is missing — confirm it was committed
