@@ -1,8 +1,3 @@
-<!-- DRAFT for your review. Publish under your own voice on your site / Medium / Substack.
-Pre-publication gate: model size stated; mechanism not intelligence; cost/context = fact, quality = flag;
-prior art cited (links inline); every number verifiable in the repo; no medical advice / SYNTHETIC framing.
-Suggested assets: the low-vs-high generation screenshot, the volume / BPB chart, the audit table. -->
-
 # Two things a 1.3-million-parameter clinical language model taught me
 
 I built a small language model from scratch on ClinicalTrials.gov text: my own byte-pair tokenizer, my own decoder-only transformer, about 1.3 million parameters. I did it so I could open up every step and look at it. The model is deliberately tiny. It produces trial-shaped text with invented specifics, everything it writes is watermarked synthetic, and it is not medical information. The goal was never a smart model. It was a transparent one, and a transparent model turns out to be a good teacher.

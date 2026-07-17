@@ -1,8 +1,3 @@
-<!-- DRAFT. The launch blog / full write-up. Publish under your own voice. Gate: model size + mechanism
-not intelligence; cost/context = fact, quality = flag; prior art cited inline; SYNTHETIC framing;
-numbers match repo; no medical advice. Fill in the SPACE_URL and REPO_URL.
-Suggested assets: the demo video, the volume chart, the RAG screenshot. -->
-
 # A glass box for clinical-trial language models: five controls, every step visible
 
 Most of us meet language models as black boxes. Text goes in, text comes out, and the machinery in between gets described with metaphors. I wanted the opposite: a model where every step is visible and checkable, built on text I care about, clinical-trial records. This is the write-up. Try the live demo: https://glass-llm.streamlit.app
