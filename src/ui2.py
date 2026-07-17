@@ -195,62 +195,105 @@ def architecture_figure_v2(is_generic, volume, n_head, fine_tuned, rag, vocab, h
     return fig
 
 
-def pipeline_sankey(input_text, in_pieces, emb0, attn_last, topk, out_text, height=470, max_in=8):
-    """Literal pipeline as a Sankey with REAL data on the nodes:
-        input text → tokens → vectors(e₀) → [attention + FFN] → predicted tokens(prob) → output text.
-    input_text = the raw prompt (first node); emb0 = first embedding component per input token;
-    attn_last = last-token attention over inputs.
+def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_norms,
+                    stream_norms, topk, out_text, height=560, max_in=8):
+    """Literal pipeline as a Sankey with REAL numbers and NO black box: the old single
+    'attention + FFN' hub is expanded into the actual chain the residual stream flows through —
+    one Attention node and one Feed-Forward node per transformer layer.
+
+        input text → tokens → vectors(e0)
+                   → Attn L1 → FFN L1 → ... → Attn Ln → FFN Ln     (the residual spine)
+                   → LM head → next-token candidates(prob) → output text
+
+    emb0         : first embedding component per input token (T,)
+    entry_attn   : last token's layer-1 attention over the inputs — the fan-in widths (T,)
+    attn_norms   : per-layer ||attention write|| for the last token — node labels (n_layer,)
+    ffn_norms    : per-layer ||feed-forward write|| for the last token — node labels (n_layer,)
+    stream_norms : residual-stream norm at the last token at each spine boundary,
+                   length 1 + 2*n_layer = [entry, after-attn-1, after-ffn-1, after-attn-2, ...]
     """
-    attn_last = np.asarray(attn_last, dtype=float)
-    order = sorted(np.argsort(-attn_last)[:max_in])          # keep most-attended inputs, in order
+    entry_attn = np.asarray(entry_attn, dtype=float)
+    order = sorted(np.argsort(-entry_attn)[:max_in])          # keep most-attended inputs, in order
     toks = [in_pieces[i] for i in order]
     e0 = [float(emb0[i]) for i in order]
-    aw = [float(attn_last[i]) for i in order]
+    aw = [float(entry_attn[i]) for i in order]
     n = len(toks)
+    n_layer = len(attn_norms)
+    R0 = max(float(stream_norms[0]), 1e-6)                    # residual norm entering the spine
+    Rout = max(float(stream_norms[-1]), 1e-6)                 # residual norm leaving the spine
 
-    labels, xs, ys, colors = [], [], [], []
+    labels, xs, ys, colors, hov = [], [], [], [], []
 
-    def col(items, x, color):
+    def col(items, x, color, hovers):
         base = len(labels)
         m = len(items)
         yy = list(np.linspace(0.06, 0.94, m)) if m > 1 else [0.5]
-        for lab in items:
-            labels.append(lab); xs.append(x); colors.append(color)
+        for k, lab in enumerate(items):
+            labels.append(lab); xs.append(x); colors.append(color); hov.append(hovers[k])
         ys.extend(yy)
         return base
 
-    inp_i = col([f"“{(input_text or '…').strip()[:20]}…”"], 0.01, "#8a6bbf")   # input text (1 node)
-    tok_i = col(toks, 0.20, "#2e8b8b")                                          # tokenise
-    vec_i = col([f"e₀={v:+.2f}" for v in e0], 0.40, "#3f8f9e")                  # vectorise
-    hub_i = col(["attention + FFN"], 0.58, "#c77d34")                           # transformer
-    prd_i = col([f"{t}·{p:.0%}" for t, p in topk], 0.79, "#d1495b")             # re-tokenise
-    out_i = col([f"“{(out_text or '…')[:22]}”"], 0.99, "#6a8d3f")               # output text
+    inp_i = col([f"“{(input_text or '…').strip()[:20]}…”"], 0.01, "#8a6bbf",
+                [f"Your input text — {len(input_text or '')} characters"])
+    tok_i = col(toks, 0.085, "#2e8b8b", [f"token: {t}" for t in toks])
+    vec_i = col([f"e₀={v:+.2f}" for v in e0], 0.16, "#3f8f9e",
+                [f"{t} → a 128-number vector; first component e₀={v:+.3f}" for t, v in zip(toks, e0)])
+
+    # the residual spine — the actual per-layer Attention→Feed-Forward chain (no black box)
+    xback = list(np.linspace(0.26, 0.80, 2 * n_layer))
+    spine_i = len(labels)
+    for l in range(n_layer):
+        labels.append(f"Attn L{l+1} · ‖Δ‖{attn_norms[l]:.1f}"); xs.append(xback[2*l]); ys.append(0.5)
+        colors.append("#c77d34")
+        hov.append(f"Layer {l+1} · Masked multi-head attention<br>"
+                   f"writes ‖Δ‖ = {attn_norms[l]:.2f} into the residual stream "
+                   f"(mixes information across tokens)<br>"
+                   f"residual-stream norm after this step: {stream_norms[2*l+1]:.2f}")
+        labels.append(f"FFN L{l+1} · ‖Δ‖{ffn_norms[l]:.1f}"); xs.append(xback[2*l+1]); ys.append(0.5)
+        colors.append("#b5651d")
+        hov.append(f"Layer {l+1} · Feed-forward W₂·GELU(W₁x)<br>"
+                   f"writes ‖Δ‖ = {ffn_norms[l]:.2f} into the residual stream "
+                   f"(reshapes each token on its own)<br>"
+                   f"residual-stream norm after this step: {stream_norms[2*l+2]:.2f}")
+
+    lm_i = col(["LM head → softmax"], 0.865, "#6b8f3f",
+               ["Project the final residual vector onto the whole vocabulary, then softmax "
+                "→ a probability for every possible next token"])
+    prd_i = col([f"{t}·{p:.0%}" for t, p in topk], 0.93, "#d1495b",
+                [f"candidate next token “{t}” — probability {p:.1%}" for t, p in topk])
+    out_i = col([f"“{(out_text or '…')[:22]}”"], 0.99, "#6a8d3f",
+                ["The sampled continuation (SYNTHETIC)"])
 
     src, tgt, val, lc = [], [], [], []
+
+    def link(s, t, v, c):
+        src.append(s); tgt.append(t); val.append(max(float(v), 1e-6)); lc.append(c)
+
     for j in range(n):                                        # input text → each token
-        src.append(inp_i); tgt.append(tok_i + j)
-        val.append(1.0); lc.append("rgba(138,107,191,0.30)")
+        link(inp_i, tok_i + j, R0 / n, "rgba(138,107,191,0.30)")
     for j in range(n):                                        # token → its vector
-        src.append(tok_i + j); tgt.append(vec_i + j)
-        val.append(max(abs(e0[j]), 0.02)); lc.append("rgba(46,139,139,0.35)")
-    for j in range(n):                                        # vector → model hub (by attention)
-        src.append(vec_i + j); tgt.append(hub_i)
-        val.append(max(aw[j], 1e-3)); lc.append("rgba(63,143,158,0.40)")
-    for j, (_, p) in enumerate(topk):                         # hub → predicted token (by prob)
-        src.append(hub_i); tgt.append(prd_i + j)
-        val.append(max(float(p), 1e-3)); lc.append("rgba(209,73,91,0.40)")
-    if topk:                                                  # best predicted → output text
-        src.append(prd_i); tgt.append(out_i)
-        val.append(max(float(topk[0][1]), 1e-3)); lc.append("rgba(106,141,63,0.45)")
+        link(tok_i + j, vec_i + j, R0 / n, "rgba(46,139,139,0.32)")
+    for j in range(n):                                        # vector → first attention (by attention)
+        link(vec_i + j, spine_i, aw[j] * R0, "rgba(63,143,158,0.40)")
+    for k in range(2 * n_layer - 1):                          # along the spine, width = residual norm
+        link(spine_i + k, spine_i + k + 1, stream_norms[k + 1], "rgba(199,125,52,0.45)")
+    link(spine_i + 2 * n_layer - 1, lm_i, stream_norms[-1], "rgba(107,143,63,0.45)")  # last FFN → LM head
+    for k, (_, p) in enumerate(topk):                         # LM head → candidate token (by prob)
+        link(lm_i, prd_i + k, float(p) * Rout, "rgba(209,73,91,0.40)")
+    if topk:                                                  # best candidate → output text
+        link(prd_i, out_i, float(topk[0][1]) * Rout, "rgba(106,141,63,0.45)")
 
     fig = go.Figure(go.Sankey(
         arrangement="fixed",
-        node=dict(label=labels, x=xs, y=ys, color=colors, pad=12, thickness=15,
-                  line=dict(color="#222", width=0.5)),
-        link=dict(source=src, target=tgt, value=val, color=lc)))
+        node=dict(label=labels, x=xs, y=ys, color=colors, pad=11, thickness=14,
+                  line=dict(color="#222", width=0.5),
+                  customdata=hov, hovertemplate="%{customdata}<extra></extra>"),
+        link=dict(source=src, target=tgt, value=val, color=lc,
+                  hovertemplate="%{source.label} → %{target.label}<extra></extra>")))
     fig.update_layout(
-        height=height, margin=dict(l=6, r=6, t=34, b=6),
-        title=dict(text="input text → tokenise → vectorise → attention+FFN → re-tokenise → output text",
+        height=height, margin=dict(l=6, r=6, t=52, b=6),
+        title=dict(text="input → tokens → vectors → real Attention→Feed-Forward chain (one pair per "
+                        "layer) → LM head → next-token → output  ·  every value is the model’s own",
                    font=dict(size=12, color="#cdd")),
-        font=dict(color="#e6e6e6", size=11), paper_bgcolor="rgba(0,0,0,0)")
+        font=dict(color="#e6e6e6", size=10.5), paper_bgcolor="rgba(0,0,0,0)")
     return fig

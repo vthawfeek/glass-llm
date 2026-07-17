@@ -16,7 +16,7 @@ WATERMARK = "SYNTHETIC — interpretability demo, not medical information"
 class Trace:
     """Structured result of one forward pass. All arrays are numpy for easy plotting."""
     def __init__(self, prompt, token_ids, token_texts, embeddings, hiddens, attentions,
-                 logits, topk):
+                 logits, topk, attn_contrib=None, ffn_contrib=None):
         self.prompt = prompt
         self.token_ids = token_ids            # list[int]
         self.token_texts = token_texts        # list[str] (per-token display strings)
@@ -25,6 +25,8 @@ class Trace:
         self.attentions = attentions          # list length n_layer of (n_head, T, T)
         self.logits = logits                  # (vocab,) next-token logits at last position
         self.topk = topk                      # list[(token_text, prob, token_id)]
+        self.attn_contrib = attn_contrib      # list length n_layer of (T, d_model) attention writes
+        self.ffn_contrib = ffn_contrib        # list length n_layer of (T, d_model) feed-forward writes
 
     @property
     def n_tokens(self):
@@ -84,6 +86,7 @@ class GlassModel:
         self.model.set_trace(True)
         logits, _, hiddens = self.model(idx, return_hidden=True)
         attns = self.model.attentions()
+        attn_outs, ffn_outs = self.model.contributions()
         self.model.set_trace(False)
 
         last = logits[0, -1]                       # next-token logits
@@ -97,9 +100,11 @@ class GlassModel:
             token_texts=[self.token_text(t) for t in ids],
             embeddings=self.model.tok.weight[ids].detach().numpy(),
             hiddens=[h[0].detach().numpy() for h in hiddens],
-            attentions=[a[0].numpy() for a in attns],   # drop batch dim -> (n_head, T, T)
+            attentions=[a[0].numpy() for a in attns],       # drop batch dim -> (n_head, T, T)
             logits=last.numpy(),
             topk=topk_list,
+            attn_contrib=[a[0].numpy() for a in attn_outs],  # per-layer (T, d_model) attention write
+            ffn_contrib=[f[0].numpy() for f in ffn_outs],    # per-layer (T, d_model) feed-forward write
         )
 
     @torch.no_grad()

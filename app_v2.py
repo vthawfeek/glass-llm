@@ -147,30 +147,10 @@ with tab_a:
                 f"training — rerun once `models_v2/{tag}.pt` exists.")
         st.stop()
     cfg = g.meta["cfg"]
+
+    # --- (a) INPUT TEXT — the first thing under the SYNTHETIC banner ---
     st.info("This is a small **text-completion** model (~1.3M parameters, like an early GPT-2) — "
             "**not** a chatbot. It predicts what text comes next.")
-
-    # --- (b) architecture figure driven by the 5 knobs ---
-    st.markdown(f"##### Your model:  `{tag}`  ·  {d_domain} · {d_volume} data · {n_head} heads"
-                f"{' · fine-tuned' if want_ft else ''}{' · RAG' if want_rag else ''}")
-    ac, dc = st.columns([3, 2])
-    ac.plotly_chart(ui2.architecture_figure_v2(is_generic, d_volume, n_head, want_ft, want_rag,
-                    g.meta["vocab_size"]), width="stretch", key="arch_v2")
-    rows = [("Data domain", "English books" if is_generic else "Clinical trials"),
-            ("Data volume", f"{d_volume} (~{g.meta.get('train_bytes', 0)//1000:,} KB)"),
-            ("Tokenizer", f"{g.meta['tokenizer']} · {g.meta['vocab_size']:,} tokens"),
-            ("Model", f"{sum(p.numel() for p in g.model.parameters())/1e6:.1f}M · "
-                      f"{cfg['n_layer']}L × {cfg['n_head']}H"),
-            ("Test BPB", g.meta.get("test_bpb", "?")),
-            ("Fine-tuned", "Biomarker tagging head" if want_ft else "No"),
-            ("Retrieval", "RAG (on)" if want_rag else "No")]
-    dc.markdown(ui.dataset_card_html("Architecture & training data", rows), unsafe_allow_html=True)
-    st.caption("🔴 Red = what this selection changes from the default (domain · High · 4 heads). "
-               "Hover the ⓘ marks on the diagram for the math at each step, in plain English.")
-    with st.expander("ⓘ The math at each step (plain English)"):
-        st.table(pd.DataFrame(ui2.ARCH_TABLE, columns=["Step", "Formula", "What it means"]))
-
-    # --- (a) prompt ---
     default_prompt = ("What are the eligibility criteria for an osimertinib trial in "
                       "EGFR T790M-positive lung cancer?")
     st.markdown("#### ✍️ Input text")
@@ -192,16 +172,51 @@ with tab_a:
     tr = g.trace(prompt)
     out_text = gen_cached(tag, prompt, 14, temperature, top_k, SRCVER)["text"][len(prompt):][:30]
 
-    # --- (c) the input-text → tokens → vectors → text Sankey (real values) ---
+    # --- (b) architecture figure driven by the 5 knobs (now after the input text) ---
+    st.markdown(f"##### Your model:  `{tag}`  ·  {d_domain} · {d_volume} data · {n_head} heads"
+                f"{' · fine-tuned' if want_ft else ''}{' · RAG' if want_rag else ''}")
+    ac, dc = st.columns([3, 2])
+    ac.plotly_chart(ui2.architecture_figure_v2(is_generic, d_volume, n_head, want_ft, want_rag,
+                    g.meta["vocab_size"]), width="stretch", key="arch_v2")
+    rows = [("Data domain", "English books" if is_generic else "Clinical trials"),
+            ("Data volume", f"{d_volume} (~{g.meta.get('train_bytes', 0)//1000:,} KB)"),
+            ("Tokenizer", f"{g.meta['tokenizer']} · {g.meta['vocab_size']:,} tokens"),
+            ("Model", f"{sum(p.numel() for p in g.model.parameters())/1e6:.1f}M · "
+                      f"{cfg['n_layer']}L × {cfg['n_head']}H"),
+            ("Test BPB", g.meta.get("test_bpb", "?")),
+            ("Fine-tuned", "Biomarker tagging head" if want_ft else "No"),
+            ("Retrieval", "RAG (on)" if want_rag else "No")]
+    dc.markdown(ui.dataset_card_html("Architecture & training data", rows), unsafe_allow_html=True)
+    st.caption("🔴 Red = what this selection changes from the default (domain · High · 4 heads). "
+               "Hover the ⓘ marks on the diagram for the math at each step, in plain English.")
+    with st.expander("ⓘ The math at each step (plain English)"):
+        st.table(pd.DataFrame(ui2.ARCH_TABLE, columns=["Step", "Formula", "What it means"]))
+
+    # --- (c) the expanded pipeline Sankey — real per-layer Attention→FFN chain, no black box ---
     st.markdown("##### The flow, as one picture")
-    attn_last = tr.attentions[-1].mean(axis=0)[-1]
+    last = tr.n_tokens - 1
+    n_layer = cfg["n_layer"]
+    entry_attn = tr.attentions[0].mean(axis=0)[last]          # layer-1 cross-token mixing (last token)
     emb0 = tr.embeddings[:, 0]
+    h = [hh[last] for hh in tr.hiddens]                       # residual stream at the predictive token
+    a = [aa[last] for aa in tr.attn_contrib]
+    f = [ff[last] for ff in tr.ffn_contrib]
+    attn_norms = [float(np.linalg.norm(v)) for v in a]
+    ffn_norms = [float(np.linalg.norm(v)) for v in f]
+    stream = [float(np.linalg.norm(h[0]))]
+    for l in range(n_layer):
+        stream.append(float(np.linalg.norm(h[l] + a[l])))    # residual norm after attention
+        stream.append(float(np.linalg.norm(h[l + 1])))       # residual norm after feed-forward
     st.plotly_chart(ui2.pipeline_sankey(prompt, [g.token_text(t) for t in tr.token_ids], emb0,
-                    attn_last, [(t, p) for t, p, _ in tr.topk[:6]], out_text),
+                    entry_attn, attn_norms, ffn_norms, stream,
+                    [(t, p) for t, p, _ in tr.topk[:6]], out_text),
                     width="stretch", key="pipe")
     st.caption("Left→right: your **tokens** → their **vectors** (e₀ = first embedding number) → the "
-               "**attention+FFN** hub → the **re-tokenised** next-token candidates → **text**. "
-               "Widths and node labels are the model’s real numbers — hover any flow.")
+               "real **Attention→Feed-Forward chain, one pair per layer** (‖Δ‖ = how much that "
+               "sublayer writes into the residual stream) → the **LM head** → the **next-token** "
+               "candidates → **text**. The spine follows the final token (the position that predicts "
+               "the next one); the fan-in on the left is where the other tokens enter, via attention. "
+               "Every node value is the model’s own — hover any node.")
 
     # --- (d) tokenization ---
     st.subheader("1 · Tokenization"); explain("tokenization")

@@ -40,10 +40,18 @@ class Block(nn.Module):
         self.ln2 = nn.LayerNorm(d_model)
         self.mlp = nn.Sequential(nn.Linear(d_model, 4 * d_model), nn.GELU(),
                                  nn.Linear(4 * d_model, d_model))
+        self.store_contrib = False   # set True only when tracing (avoids training overhead)
+        self.last_attn_out = None    # (B, T, C) attention sublayer's write into the residual stream
+        self.last_ffn_out = None     # (B, T, C) feed-forward sublayer's write into the residual stream
 
     def forward(self, x):
-        x = x + self.attn(self.ln1(x))
-        x = x + self.mlp(self.ln2(x))
+        a = self.attn(self.ln1(x))       # attention sublayer output
+        x = x + a                        # residual stream after attention
+        f = self.mlp(self.ln2(x))        # feed-forward sublayer output
+        x = x + f                        # residual stream after feed-forward
+        if self.store_contrib:
+            self.last_attn_out = a.detach()
+            self.last_ffn_out = f.detach()
         return x
 
 
@@ -85,13 +93,21 @@ class GPT(nn.Module):
         return logits, loss
 
     def set_trace(self, flag):
-        """Toggle attention-weight capture on every attention block."""
+        """Toggle attention-weight and per-sublayer contribution capture on every block
+        (tracing only — no effect on the forward math, so training/generation are untouched)."""
         for b in self.blocks:
             b.attn.store_attn = flag
+            b.store_contrib = flag
 
     def attentions(self):
         """Per-layer attention from the most recent traced forward: list of (B, n_head, T, T)."""
         return [b.attn.last_attn for b in self.blocks]
+
+    def contributions(self):
+        """Per-layer sublayer writes from the most recent traced forward:
+        (attn_outs, ffn_outs), each a list of length n_layer with (B, T, d_model) tensors."""
+        return ([b.last_attn_out for b in self.blocks],
+                [b.last_ffn_out for b in self.blocks])
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters())
