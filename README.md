@@ -12,7 +12,7 @@ license: mit
 
 # 🧬 Glass-LLM — a glass box for language models on clinical-trial text
 
-**Live demo:** _<add your Hugging Face Space URL here>_
+**Live demo:** https://glass-llm.streamlit.app
 
 A decoder-only GPT and a BPE tokenizer, both **written from scratch** and trained on
 ClinicalTrials.gov text (all curated sections), wrapped in a dashboard with **five dials** — each
@@ -56,9 +56,9 @@ tokenizer (vocab 4,096), **6** with GPT-4's (`p·emb·rol·iz·um·ab`), 5 with 
 
 - **Cost & context are facts.** A full eligibility criterion: **30 tokens (domain) vs 55 (general)**
   at equal vocab size — cheaper, more usable context.
-- **"Domain always wins" is false.** GPT-4's 100k+ vocab is competitive (4.75 tokens/term vs 5.75
-  on a mixed probe). The clean win is domain-vs-general *at equal vocab* (~20–45% fewer), **not**
-  "beats GPT-4."
+- **"Domain always wins" is false.** GPT-4's 100k+ vocab is competitive (**4.22** tokens/term vs
+  **4.94** on the 90-term probe set in `pilot/probe_terms.txt`). The clean win is domain-vs-general
+  *at equal vocab* (~20–45% fewer), **not** "beats GPT-4."
 - **Quality is a flag, not a verdict** — a risk to test for rare/exact-match terms, not proof of
   worse understanding. (This is why [PubMedBERT](https://arxiv.org/abs/2007.15779) trained its own
   vocabulary; trade-offs in the [tokenizer literature](https://arxiv.org/abs/2310.08754).)

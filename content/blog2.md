@@ -5,7 +5,7 @@ Suggested assets: the demo video, the volume chart, the RAG screenshot. -->
 
 # A glass box for clinical-trial language models: five controls, every step visible
 
-Most of us meet language models as black boxes. Text goes in, text comes out, and the machinery in between gets described with metaphors. I wanted the opposite: a model where every step is visible and checkable, built on text I care about, clinical-trial records. This is the write-up. Try the live demo: <SPACE_URL>
+Most of us meet language models as black boxes. Text goes in, text comes out, and the machinery in between gets described with metaphors. I wanted the opposite: a model where every step is visible and checkable, built on text I care about, clinical-trial records. This is the write-up. Try the live demo: https://glass-llm.streamlit.app
 
 One disclaimer up front, because it matters. The model here is about 1.3M parameters (d_model 128, 4 layers, 4 heads, context 128). It is not smart, and it is not meant to be. It produces trial-shaped text with invented specifics, every generation is watermarked synthetic, and it is not medical information. The point is transparency, not capability.
 
@@ -25,7 +25,7 @@ Training data (clinical trials or general English). The domain model speaks tria
 
 Data volume (1, 8, or 32 MB). This is the finding I like most, because it is counterintuitive. Same architecture, same tokenizer, same 4,000 steps, only the data changes. The 1 MB model looks the most fluent ("Age >= 18 to 80 years old") but scores the worst on held-out text: bits-per-byte of 2.24, 1.49, and 1.47 as data grows from 1 to 8 to 32 MB. With only 1 MB it passes over the corpus about 30 times and memorises it. Fluent is not the same as learned, which is why we measure held-out perplexity instead of eyeballing output.
 
-Attention heads (4 or 8). The heatmaps change, and the effect on held-out loss is small and honestly non-monotonic. On the tiny-data model, 8 heads actually did slightly worse, because more parameters overfit harder. A useful reminder that more is not automatically better.
+Attention heads (4 or 8). The heatmaps change, and the effect on held-out loss is small and honestly non-monotonic. On the tiny-data generic model, 8 heads did slightly worse — 2.64 to 2.78 bits-per-byte — more parameters overfitting harder on 1 MB of text. But on the tiny-data domain model the same change went the other way and helped, 2.24 down to 2.15. So the direction is not a property of the architecture; it depends on the data underneath it. A useful reminder that more is not automatically better, and that "better" here is worth checking rather than assuming.
 
 Fine-tuning (biomarker tagging). More on this below; it is where I was most careful.
 
@@ -57,4 +57,4 @@ Overclaiming is how these projects lose credibility, so let me be plain. Interac
 
 The code (https://github.com/vthawfeek/glass-llm) runs end to end: pull ClinicalTrials.gov, train the tokenizer, train the model zoo, warm the audit tokenizers, launch the dashboard. Seeds are fixed and configs are logged.
 
-Open the glass box: <SPACE_URL>
+Open the glass box: https://glass-llm.streamlit.app
