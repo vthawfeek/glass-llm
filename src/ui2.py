@@ -196,14 +196,15 @@ def architecture_figure_v2(is_generic, volume, n_head, fine_tuned, rag, vocab, h
 
 
 def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_norms,
-                    stream_norms, topk, out_text, height=560, max_in=8):
-    """Literal pipeline as a Sankey with REAL numbers and NO black box: the old single
-    'attention + FFN' hub is expanded into the actual chain the residual stream flows through —
-    one Attention node and one Feed-Forward node per transformer layer.
+                    stream_norms, topk, out_text, expand=True, height=560, max_in=8):
+    """Literal pipeline as a Sankey with REAL numbers and NO black box.
 
-        input text → tokens → vectors(e0)
-                   → Attn L1 → FFN L1 → ... → Attn Ln → FFN Ln     (the residual spine)
-                   → LM head → next-token candidates(prob) → output text
+    expand=True  → the transformer is drawn as the actual chain the residual stream flows through:
+                   one Attention node and one Feed-Forward node per layer.
+        input → tokens → vectors(e0) → Attn L1 → FFN L1 → … → Attn Ln → FFN Ln
+              → LM head → next-token candidates(prob) → output
+    expand=False → those 2*n_layer sublayer nodes collapse into ONE 'Attention + Feed-Forward'
+                   hub for a clean overview (the same left/right context, just the middle folded).
 
     emb0         : first embedding component per input token (T,)
     entry_attn   : last token's layer-1 attention over the inputs — the fan-in widths (T,)
@@ -219,8 +220,8 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
     aw = [float(entry_attn[i]) for i in order]
     n = len(toks)
     n_layer = len(attn_norms)
-    R0 = max(float(stream_norms[0]), 1e-6)                    # residual norm entering the spine
-    Rout = max(float(stream_norms[-1]), 1e-6)                 # residual norm leaving the spine
+    R0 = max(float(stream_norms[0]), 1e-6)                    # residual norm entering the transformer
+    Rout = max(float(stream_norms[-1]), 1e-6)                 # residual norm leaving the transformer
 
     labels, xs, ys, colors, hov = [], [], [], [], []
 
@@ -239,24 +240,33 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
     vec_i = col([f"e₀={v:+.2f}" for v in e0], 0.16, "#3f8f9e",
                 [f"{t} → a 128-number vector; first component e₀={v:+.3f}" for t, v in zip(toks, e0)])
 
-    # the residual spine — the actual per-layer Attention→Feed-Forward chain (no black box)
-    xback = list(np.linspace(0.26, 0.80, 2 * n_layer))
-    spine_i = len(labels)
-    for l in range(n_layer):
-        labels.append(f"Attn L{l+1} · ‖Δ‖{attn_norms[l]:.1f}"); xs.append(xback[2*l]); ys.append(0.5)
-        colors.append("#c77d34")
-        hov.append(f"Layer {l+1} · Masked multi-head attention<br>"
-                   f"writes ‖Δ‖ = {attn_norms[l]:.2f} into the residual stream "
-                   f"(mixes information across tokens)<br>"
-                   f"residual-stream norm after this step: {stream_norms[2*l+1]:.2f}")
-        labels.append(f"FFN L{l+1} · ‖Δ‖{ffn_norms[l]:.1f}"); xs.append(xback[2*l+1]); ys.append(0.5)
-        colors.append("#b5651d")
-        hov.append(f"Layer {l+1} · Feed-forward W₂·GELU(W₁x)<br>"
-                   f"writes ‖Δ‖ = {ffn_norms[l]:.2f} into the residual stream "
-                   f"(reshapes each token on its own)<br>"
-                   f"residual-stream norm after this step: {stream_norms[2*l+2]:.2f}")
+    # ----- middle: the per-layer Attention→Feed-Forward spine, or one collapsed hub -----
+    if expand:
+        xback = list(np.linspace(0.30, 0.78, 2 * n_layer))
+        mid_first = len(labels)
+        for l in range(n_layer):
+            labels.append(f"Attn L{l+1}  Δ{attn_norms[l]:.0f}"); xs.append(xback[2*l]); ys.append(0.5)
+            colors.append("#c77d34")
+            hov.append(f"Layer {l+1} · Masked multi-head attention<br>"
+                       f"writes ‖Δ‖ = {attn_norms[l]:.2f} into the residual stream "
+                       f"(mixes information across tokens)<br>"
+                       f"residual-stream norm after this step: {stream_norms[2*l+1]:.2f}")
+            labels.append(f"FFN L{l+1}  Δ{ffn_norms[l]:.0f}"); xs.append(xback[2*l+1]); ys.append(0.5)
+            colors.append("#b5651d")
+            hov.append(f"Layer {l+1} · Feed-forward W₂·GELU(W₁x)<br>"
+                       f"writes ‖Δ‖ = {ffn_norms[l]:.2f} into the residual stream "
+                       f"(reshapes each token on its own)<br>"
+                       f"residual-stream norm after this step: {stream_norms[2*l+2]:.2f}")
+        mid_last = len(labels) - 1
+    else:
+        mid_first = col([f"Attention + Feed-Forward · ×{n_layer} layers"], 0.52, "#c77d34",
+                        [f"{n_layer} transformer layers, each = masked multi-head attention + a "
+                         f"feed-forward network.<br>Collapsed view — turn on “Expand the transformer "
+                         f"layers” to see each layer’s ‖Δ‖ write.<br>residual-stream norm entering: "
+                         f"{R0:.2f} → leaving: {Rout:.2f}"])
+        mid_last = mid_first
 
-    lm_i = col(["LM head → softmax"], 0.865, "#6b8f3f",
+    lm_i = col(["LM head → softmax"], 0.87, "#6b8f3f",
                ["Project the final residual vector onto the whole vocabulary, then softmax "
                 "→ a probability for every possible next token"])
     prd_i = col([f"{t}·{p:.0%}" for t, p in topk], 0.93, "#d1495b",
@@ -273,16 +283,19 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
         link(inp_i, tok_i + j, R0 / n, "rgba(138,107,191,0.30)")
     for j in range(n):                                        # token → its vector
         link(tok_i + j, vec_i + j, R0 / n, "rgba(46,139,139,0.32)")
-    for j in range(n):                                        # vector → first attention (by attention)
-        link(vec_i + j, spine_i, aw[j] * R0, "rgba(63,143,158,0.40)")
-    for k in range(2 * n_layer - 1):                          # along the spine, width = residual norm
-        link(spine_i + k, spine_i + k + 1, stream_norms[k + 1], "rgba(199,125,52,0.45)")
-    link(spine_i + 2 * n_layer - 1, lm_i, stream_norms[-1], "rgba(107,143,63,0.45)")  # last FFN → LM head
+    for j in range(n):                                        # vector → the transformer (by attention)
+        link(vec_i + j, mid_first, aw[j] * R0, "rgba(63,143,158,0.40)")
+    if expand:                                                # along the spine, width = residual norm
+        for k in range(2 * n_layer - 1):
+            link(mid_first + k, mid_first + k + 1, stream_norms[k + 1], "rgba(199,125,52,0.45)")
+    link(mid_last, lm_i, stream_norms[-1], "rgba(107,143,63,0.45)")   # transformer → LM head
     for k, (_, p) in enumerate(topk):                         # LM head → candidate token (by prob)
         link(lm_i, prd_i + k, float(p) * Rout, "rgba(209,73,91,0.40)")
     if topk:                                                  # best candidate → output text
         link(prd_i, out_i, float(topk[0][1]) * Rout, "rgba(106,141,63,0.45)")
 
+    mid_txt = ("real Attention→Feed-Forward chain (one pair per layer)" if expand
+               else f"Attention+Feed-Forward hub (×{n_layer} layers, collapsed)")
     fig = go.Figure(go.Sankey(
         arrangement="fixed",
         node=dict(label=labels, x=xs, y=ys, color=colors, pad=11, thickness=14,
@@ -292,8 +305,8 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
                   hovertemplate="%{source.label} → %{target.label}<extra></extra>")))
     fig.update_layout(
         height=height, margin=dict(l=6, r=6, t=52, b=6),
-        title=dict(text="input → tokens → vectors → real Attention→Feed-Forward chain (one pair per "
-                        "layer) → LM head → next-token → output  ·  every value is the model’s own",
+        title=dict(text=f"input → tokens → vectors → {mid_txt} → LM head → next-token → output"
+                        "  ·  every value is the model’s own",
                    font=dict(size=12, color="#cdd")),
         font=dict(color="#e6e6e6", size=10.5), paper_bgcolor="rgba(0,0,0,0)")
     return fig

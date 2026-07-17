@@ -192,8 +192,14 @@ with tab_a:
     with st.expander("ⓘ The math at each step (plain English)"):
         st.table(pd.DataFrame(ui2.ARCH_TABLE, columns=["Step", "Formula", "What it means"]))
 
-    # --- (c) the expanded pipeline Sankey — real per-layer Attention→FFN chain, no black box ---
+    # --- (c) the pipeline Sankey — real per-layer Attention→FFN chain (collapsible), no black box ---
     st.markdown("##### The flow, as one picture")
+    expand_layers = st.toggle(
+        "Expand the transformer layers (Attention + Feed-Forward, one pair per layer)",
+        value=True, key="sankey_expand",
+        help="On: every layer’s Attention and Feed-Forward node, each labelled with the real amount "
+             "‖Δ‖ it writes into the residual stream. Off: collapse all layers into one "
+             "Attention+Feed-Forward node for a clean, uncrowded overview.")
     last = tr.n_tokens - 1
     n_layer = cfg["n_layer"]
     entry_attn = tr.attentions[0].mean(axis=0)[last]          # layer-1 cross-token mixing (last token)
@@ -209,14 +215,17 @@ with tab_a:
         stream.append(float(np.linalg.norm(h[l + 1])))       # residual norm after feed-forward
     st.plotly_chart(ui2.pipeline_sankey(prompt, [g.token_text(t) for t in tr.token_ids], emb0,
                     entry_attn, attn_norms, ffn_norms, stream,
-                    [(t, p) for t, p, _ in tr.topk[:6]], out_text),
+                    [(t, p) for t, p, _ in tr.topk[:6]], out_text, expand=expand_layers),
                     width="stretch", key="pipe")
     st.caption("Left→right: your **tokens** → their **vectors** (e₀ = first embedding number) → the "
-               "real **Attention→Feed-Forward chain, one pair per layer** (‖Δ‖ = how much that "
-               "sublayer writes into the residual stream) → the **LM head** → the **next-token** "
-               "candidates → **text**. The spine follows the final token (the position that predicts "
-               "the next one); the fan-in on the left is where the other tokens enter, via attention. "
-               "Every node value is the model’s own — hover any node.")
+               "transformer (**expanded** into each layer’s Attention→Feed-Forward, or **collapsed** "
+               "into one hub via the toggle above) → the **LM head** → the **next-token** candidates → "
+               "**text**. When expanded, each node’s Δ is how much that sublayer writes into the "
+               "residual stream. The spine follows the final token (the position that predicts the "
+               "next one); the fan-in on the left is where the other tokens enter, via attention. "
+               "Note the **attention node sums over all heads** — switch control 3 (4↔8 heads) to see "
+               "the per-head detail in the **Attention** panel below; here it changes the numbers "
+               "(a different trained model), not the diagram’s shape.")
 
     # --- (d) tokenization ---
     st.subheader("1 · Tokenization"); explain("tokenization")
