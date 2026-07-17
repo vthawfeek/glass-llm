@@ -7,7 +7,7 @@ Watch a language model invent a clinical trial, then watch retrieval stop it. Li
 For the last few weeks I've been building a language model on clinical-trial text from scratch: my own BPE tokenizer, my own transformer. Not to make it smart, but to make it transparent. It's live now, and you can click through every step.
 
 Try it: https://glass-llm.streamlit.app
-Write-up: <BLOG_URL>
+Write-up: https://rokpayprsizors.wordpress.com/2026/07/17/a-glass-box-for-clinical-trial-language-models-five-controls-every-step-visible/
 Code: https://github.com/vthawfeek/glass-llm
 
 Five controls (data domain, data volume, attention heads, fine-tuning, retrieval) each reshape the model in front of you. Two things I'm most pleased with, because they're honest about the limits.

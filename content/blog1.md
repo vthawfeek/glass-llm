@@ -51,3 +51,5 @@ None of this is new. Domain-specific tokenization is why PubMedBERT trained its 
 So I built a glass-box dashboard. One panel lets you paste your own vocabulary, your drug names and gene variants, and see how GPT-4, GPT-4o, GPT-2, and BERT fragment it and what that costs in tokens and context. Another lets you move the data-volume control and watch a small model tip from generalising into memorising.
 
 The model behind it is tiny on purpose. It demonstrates the mechanism, not intelligence, and everything it generates is watermarked synthetic and is not medical information. This project is not about a smart model. It is about a transparent one.
+
+<!-- published: https://rokpayprsizors.wordpress.com/2026/07/17/two-things-a-1-3-million-parameter-clinical-language-model-taught-me/ -->

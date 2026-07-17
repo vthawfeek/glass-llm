@@ -53,3 +53,5 @@ Overclaiming is how these projects lose credibility, so let me be plain. Interac
 The code (https://github.com/vthawfeek/glass-llm) runs end to end: pull ClinicalTrials.gov, train the tokenizer, train the model zoo, warm the audit tokenizers, launch the dashboard. Seeds are fixed and configs are logged.
 
 Open the glass box: https://glass-llm.streamlit.app
+
+<!-- published: https://rokpayprsizors.wordpress.com/2026/07/17/a-glass-box-for-clinical-trial-language-models-five-controls-every-step-visible/ -->
