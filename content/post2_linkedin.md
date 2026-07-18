@@ -14,7 +14,7 @@ The 1 MB model produces clean lines like "Age >= 18 to 80 years old", so by eye 
 
 This is why we measure held-out perplexity instead of trusting how the output reads. Fluent is not the same as learned. A model that has memorised its training set demos beautifully and generalises badly, and in a small-data setting (a rare disease, a new target, one site's records) that trap is the default rather than the exception.
 
-You can move this control in the dashboard and watch the memorisation show up at the low end.
+In the dashboard, all three sizes sit on one held-out bits-per-byte scale — the size you pick highlighted, with a plain "memorised" versus "generalises" verdict — so you see the trap instead of trusting how fluent the output looks.
 
 The model is about 1.3M parameters and everything it writes is watermarked SYNTHETIC. It is not medical information.
 

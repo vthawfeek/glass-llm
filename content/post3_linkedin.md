@@ -17,6 +17,6 @@ Cost and context are simple facts. You pay per token and your context window is 
 
 And quality is a flag, not a verdict. Heavy fragmentation is a risk to test for rare terms and exact-match tasks. It is not proof that the model understands the term worse, because large models absorb a lot of it.
 
-The dashboard has a panel where you paste your own terms and see how GPT-4, GPT-4o, GPT-2, and BERT split them, and what that costs. It's a cheap check before trusting an LLM on clinical text, and it's why PubMedBERT trained its vocabulary from scratch (arxiv.org/abs/2007.15779).
+The dashboard has a panel where you paste your own terms and see how GPT-4, GPT-4o, GPT-2, and BERT split them, and what that costs. Alongside it, the model view runs the same text through the clinical and the general tokenizer at once, so you can watch a drug name stay whole or shatter. It's a cheap check before trusting an LLM on clinical text, and it's why PubMedBERT trained its vocabulary from scratch (arxiv.org/abs/2007.15779).
 
 #LLM #NLP #DrugDiscovery #ClinicalNLP #Tokenization

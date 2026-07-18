@@ -12,7 +12,7 @@ It's a decoder-only transformer and a BPE tokenizer, both written from scratch (
 4. Fine-tuning: on or off (biomarker tagging)
 5. Retrieval (RAG): on or off
 
-Change any one of them and the tokenization, the embedding map, the attention heatmaps, the next-token probabilities, and the generated text all update with the model's real numbers. Hover the diagram and each step shows its math in plain English.
+Change any one of them and the tokenization, the embedding map, the attention heatmaps, the next-token probabilities, and the generated text all update with the model's real numbers. And you don't just see the new state: flip a control and the step it affects shows the before and after side by side. You can step the generation one token at a time, watching the next-token odds sharpen or flatten as you move the temperature. Hover the diagram and each step shows its math in plain English.
 
 The model is deliberately tiny, so this was never about making it smart. Everything it writes is watermarked SYNTHETIC and is not medical information. What I wanted was to see, not just assert, what each design choice does.
 

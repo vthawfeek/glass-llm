@@ -20,7 +20,7 @@ The held-out numbers say the opposite. Measured in bits-per-byte on trials the m
 
 The 1 MB model looks fluent because, in 4,000 steps, it passes over that tiny corpus about 30 times and memorises it. It is not generalising, it is reciting. On new text it is the worst of the three.
 
-This is why we measure held-out perplexity instead of trusting our eyes. Fluent is not the same as learned. A model that has memorised its training set will demo beautifully and fail in production, and in exactly the settings biomedicine cares about (rare diseases, a novel target, a single site's records), small data makes that the default rather than the exception. In the dashboard you can move the data-volume control and watch the memorisation appear at the low end.
+This is why we measure held-out perplexity instead of trusting our eyes. Fluent is not the same as learned. A model that has memorised its training set will demo beautifully and fail in production, and in exactly the settings biomedicine cares about (rare diseases, a novel target, a single site's records), small data makes that the default rather than the exception. In the dashboard, all three sizes sit on one held-out bits-per-byte scale, the size you pick highlighted, with a plain "memorised" versus "generalises" verdict — so you watch the trap appear at the low end instead of trusting the fluent-looking output.
 
 ## 2. Tokenization is real, but easy to overclaim
 
@@ -48,7 +48,7 @@ None of this is new. Domain-specific tokenization is why PubMedBERT trained its 
 
 ## You can look for yourself
 
-So I built a glass-box dashboard. One panel lets you paste your own vocabulary, your drug names and gene variants, and see how GPT-4, GPT-4o, GPT-2, and BERT fragment it and what that costs in tokens and context. Another lets you move the data-volume control and watch a small model tip from generalising into memorising.
+So I built a glass-box dashboard. One panel lets you paste your own vocabulary, your drug names and gene variants, and see how GPT-4, GPT-4o, GPT-2, and BERT fragment it and what that costs in tokens and context; the model view also runs your text through the clinical and general tokenizers side by side. Another lets you move the data-volume control and watch a small model tip from generalising into memorising. And you can step the model's generation one token at a time, watching the next-token odds reshape as you change the temperature.
 
 The model behind it is tiny on purpose. It demonstrates the mechanism, not intelligence, and everything it generates is watermarked synthetic and is not medical information. This project is not about a smart model. It is about a transparent one.
 
