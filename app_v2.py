@@ -75,6 +75,13 @@ def gen_cached(tag, prompt, max_new, temperature, top_k, srcver):
     return load_model(tag, srcver).generate(prompt, max_new_tokens=max_new,
                                             temperature=temperature, top_k=top_k)
 
+@st.cache_data
+def bpb_for(tag, srcver):
+    """Held-out bits-per-byte stored in a model's checkpoint (drives the volume gauge)."""
+    g_ = load_model(tag, srcver)
+    v = g_.meta.get("test_bpb") if g_ is not None else None
+    return float(v) if v is not None else None
+
 
 def chips(g, ids, flags=None, limit=None):
     """Colored token chips; if `flags` given, biomarker tokens are highlighted red."""
@@ -136,6 +143,7 @@ n_head = 8 if d_heads.startswith("8") else 4
 want_ft = d_ft == "Yes"
 want_rag = d_rag == "Yes"
 tag = ui2.tag_for(d_domain, d_volume, d_heads)
+cur_v = "lo" if d_volume.startswith("Low") else ("md" if d_volume.startswith("Med") else "hi")
 
 tab_a, tab_b = st.tabs(["🔬  Model explorer", "🔤  Tokenizer audit (all combinations)"])
 
@@ -151,6 +159,25 @@ with tab_a:
     # --- (a) INPUT TEXT — the first thing under the SYNTHETIC banner ---
     st.info("This is a small **text-completion** model (~1.3M parameters, like an early GPT-2) — "
             "**not** a chatbot. It predicts what text comes next.")
+    with st.expander("👋 New here? Three quick things to try", expanded=False):
+        st.markdown(
+            "1. **Flip control 1 (Training data) to 📖 English books** — watch *pembrolizumab* "
+            "shatter into more pieces in **step 1 · Tokenization**.\n"
+            "2. **Set control 2 (Data volume) to Low (1 MB)** — the gauge below flips to a "
+            "‘memorised’ warning: the model looks fluent but predicts unseen trials worst.\n"
+            "3. **In step 5 · Generation, drag temperature from 0.1 to 1.5** — watch the next-token "
+            "bars go from one tall spike to a flat spread, then step the loop one token at a time.")
+    with st.expander("🗺️ What each control changes (and what it doesn’t)"):
+        st.table(pd.DataFrame(
+            [["1 · Training data", "✅ Yes", "Tokenization (step 1) — and every step downstream"],
+             ["2 · Data volume", "No", "Generation + the BPB gauge (memorise ↔ generalise)"],
+             ["3 · Attention heads", "No", "The attention maps (step 3)"],
+             ["4 · Fine-tuning", "No", "The fine-tuning panel (biomarker tags light up)"],
+             ["5 · Retrieval (RAG)", "No", "Generation (invented ↔ grounded in real trials)"]],
+            columns=["Control", "Changes the tokenizer?", "Where you see its effect"]))
+        st.caption("Every control selects a *different trained model*, so all downstream numbers "
+                   "shift; the table shows where each one is **designed** to be read. Only control 1 "
+                   "changes how text is split into tokens — the audit tab proves it.")
     default_prompt = ("What are the eligibility criteria for an osimertinib trial in "
                       "EGFR T790M-positive lung cancer?")
     st.markdown("#### ✍️ Input text")
@@ -189,8 +216,47 @@ with tab_a:
     dc.markdown(ui.dataset_card_html("Architecture & training data", rows), unsafe_allow_html=True)
     st.caption("🔴 Red = what this selection changes from the default (domain · High · 4 heads). "
                "Hover the ⓘ marks on the diagram for the math at each step, in plain English.")
-    with st.expander("ⓘ The math at each step (plain English)"):
+    with st.expander("ⓘ The math at each step, as a table (same info as the diagram’s ⓘ hovers)"):
         st.table(pd.DataFrame(ui2.ARCH_TABLE, columns=["Step", "Formula", "What it means"]))
+
+    # --- (b2) volume → memorise-vs-generalise gauge (the headline finding, made visible) ---
+    st.markdown("##### 📊 What your **data-volume** choice (control 2) did to the model")
+    _dp = "g" if is_generic else "d"
+    vbars = [(lbl, mb, bpb_for(f"{_dp}_{v}_{n_head}h", SRCVER), v == cur_v)
+             for v, lbl, mb in [("lo", "Low", "1 MB"), ("md", "Medium", "8 MB"), ("hi", "High", "32 MB")]]
+    vbars = [b for b in vbars if b[2] is not None]
+    if len(vbars) >= 2:
+        yl = [f"{lbl} · {mb}" for lbl, mb, _, _ in vbars][::-1]
+        xv = [v for _, _, v, _ in vbars][::-1]
+        cl = ["#d1495b" if cur else "#33484d" for _, _, _, cur in vbars][::-1]
+        figv = go.Figure(go.Bar(x=xv, y=yl, orientation="h", marker_color=cl,
+                                text=[f"{v:.2f}" for v in xv], textposition="outside",
+                                cliponaxis=False))
+        figv.update_layout(height=210, margin=dict(l=6, r=44, t=6, b=34),
+                           xaxis_title="held-out bits-per-byte  ·  ◀ lower = predicts unseen trials better",
+                           xaxis=dict(range=[0, max(xv) * 1.18]))
+        st.plotly_chart(figv, width="stretch", key="volgauge")
+        cur_b = next(b for b in vbars if b[3])
+        best = min(vbars, key=lambda b: b[2]); worst = max(vbars, key=lambda b: b[2])
+        clbl, cmb, cbpb = cur_b[0], cur_b[1], cur_b[2]
+        if clbl == "Low":
+            st.warning(
+                f"⚠️ With only **{cmb}** of text, this model scores **worst** on held-out trials — "
+                f"**{cbpb:.2f}** bits-per-byte. In 4,000 steps it passes over that little text ~30 "
+                f"times and **memorises** it: the output can look fluent while it is really reciting. "
+                f"Raise the volume and watch this number drop.")
+        elif clbl == "High":
+            st.success(
+                f"✅ With **{cmb}** of text, this model **generalises best** — **{cbpb:.2f}** "
+                f"bits-per-byte, the lowest here. More data → it learns patterns instead of "
+                f"memorising a small corpus. Drop the volume to **Low** to watch memorisation set in.")
+        else:
+            st.info(
+                f"With **{cmb}** of text ({cbpb:.2f} bpb) this model sits between memorising "
+                f"(**Low**, {worst[2]:.2f} bpb) and generalising (**High**, {best[2]:.2f} bpb).")
+        st.caption("Same architecture, tokenizer, and 4,000 training steps — only the amount of "
+                   "training text changes. This is the one thing you can't judge from the output by "
+                   "eye: **fluent is not the same as learned.**")
 
     # --- (c) the pipeline Sankey — real per-layer Attention→FFN chain (collapsible), no black box ---
     st.markdown("##### The flow, as one picture")
@@ -217,7 +283,7 @@ with tab_a:
                     entry_attn, attn_norms, ffn_norms, stream,
                     [(t, p) for t, p, _ in tr.topk[:6]], out_text, expand=expand_layers),
                     width="stretch", key="pipe")
-    st.caption("Left→right: your **tokens** → their **vectors** (e₀ = first embedding number) → the "
+    st.caption("Left→right: your **tokens** → their **vectors** (each token becomes 128 numbers) → the "
                "transformer (**expanded** into each layer’s Attention→Feed-Forward, or **collapsed** "
                "into one hub via the toggle above) → the **LM head** → the **next-token** candidates → "
                "**text**. When expanded, each node’s Δ is how much that sublayer writes into the "
@@ -236,29 +302,56 @@ with tab_a:
     m[1].metric("words", nwords)
     m[2].metric("tokens / word", f"{tr.n_tokens/nwords:.2f}", help=ui.help_for("tokens_per_word"))
 
-    # --- (e) embeddings ---
+    # the SAME text through both tokenizers — what control 1 (training data) changes, in place
+    st.markdown("**The same text through both tokenizers** — this is what **control 1 "
+                "(training data)** changes:")
+    gc1, gc2 = st.columns(2)
+    for col, dp, lbl in [(gc1, "d", "🏥 Clinical-trials tokenizer"),
+                         (gc2, "g", "📖 English-books tokenizer")]:
+        gg = load_model(f"{dp}_{cur_v}_{n_head}h", SRCVER)
+        if gg is None:
+            continue
+        ids2 = gg.tok.encode(prompt)[-gg.ctx:]
+        active = (dp == "g") == is_generic
+        mark = " · ← your model" if active else ""
+        col.markdown(f"<div style='color:#9ab;font-size:.9em'>{lbl} — <b>{len(ids2)} tokens</b>"
+                     f"{mark}</div>", unsafe_allow_html=True)
+        col.markdown(chips(gg, ids2), unsafe_allow_html=True)
+    st.caption("Fewer, cleaner pieces on medical words = cheaper and more usable context. Volume, "
+               "heads, fine-tuning and RAG do **not** change tokenization — only control 1 does.")
+
+    # --- (e) embeddings — lead with the intuition (nearest neighbours), map is secondary ---
     st.subheader("2 · Embeddings"); explain("embeddings")
-    coords = pca3(tag, SRCVER)
-    rng = np.random.default_rng(0)
-    samp = rng.choice(coords.shape[0], size=min(700, coords.shape[0]), replace=False)
     uniq = list(dict.fromkeys(tr.token_ids))
-    fig_e = go.Figure()
-    fig_e.add_trace(go.Scatter3d(x=coords[samp, 0], y=coords[samp, 1], z=coords[samp, 2],
-                    mode="markers", marker=dict(size=2, color="#c9c9c9", opacity=.5),
-                    name="vocabulary", hoverinfo="skip"))
-    fig_e.add_trace(go.Scatter3d(x=coords[uniq, 0], y=coords[uniq, 1], z=coords[uniq, 2],
-                    mode="markers+text", marker=dict(size=5, color="#d1495b"),
-                    text=[g.token_text(t) for t in uniq], textposition="top center",
-                    name="prompt tokens"))
-    fig_e.update_layout(height=380, margin=dict(l=0, r=0, t=0, b=0),
-                        scene=dict(xaxis_title="PC1", yaxis_title="PC2", zaxis_title="PC3"),
-                        legend=dict(orientation="h"))
-    st.plotly_chart(fig_e, width="stretch", key="emb3d")
     if uniq:
-        pick = st.selectbox("Cosine nearest neighbors of", uniq,
+        pick = st.selectbox("Show the words closest in meaning to", uniq,
                             format_func=lambda t: g.token_text(t), help=ui.help_for("cosine"))
         nn = g.nearest(pick, 6)
-        st.table({"token": [t for t, _, _ in nn], "cosine": [round(s, 3) for _, s, _ in nn]})
+        st.markdown(f"The model places these tokens nearest to **{g.token_text(pick)}** in its "
+                    f"128-dimensional meaning-space:")
+        st.table({"token": [t for t, _, _ in nn],
+                  "cosine similarity": [round(s, 3) for _, s, _ in nn]})
+        st.caption("Cosine similarity: **1.00 = same direction (most alike)**, 0 = unrelated. These "
+                   "neighbours are *learned* from the training text — switch control 1 and watch them "
+                   "change (a clinical model clusters genes and drugs; an English one doesn’t).")
+    with st.expander("🌐 See the whole vocabulary as a 3D map (drag to rotate)"):
+        coords = pca3(tag, SRCVER)
+        rng = np.random.default_rng(0)
+        samp = rng.choice(coords.shape[0], size=min(700, coords.shape[0]), replace=False)
+        fig_e = go.Figure()
+        fig_e.add_trace(go.Scatter3d(x=coords[samp, 0], y=coords[samp, 1], z=coords[samp, 2],
+                        mode="markers", marker=dict(size=2, color="#c9c9c9", opacity=.5),
+                        name="vocabulary", hoverinfo="skip"))
+        fig_e.add_trace(go.Scatter3d(x=coords[uniq, 0], y=coords[uniq, 1], z=coords[uniq, 2],
+                        mode="markers+text", marker=dict(size=5, color="#d1495b"),
+                        text=[g.token_text(t) for t in uniq], textposition="top center",
+                        name="prompt tokens"))
+        fig_e.update_layout(height=380, margin=dict(l=0, r=0, t=0, b=0),
+                            scene=dict(xaxis_title="PC1", yaxis_title="PC2", zaxis_title="PC3"),
+                            legend=dict(orientation="h"))
+        st.plotly_chart(fig_e, width="stretch", key="emb3d")
+        st.caption("The real space has 128 dimensions; PCA flattens it to 3 so it can be drawn. "
+                   "Red dots = your prompt’s tokens.")
 
     # --- (f) attention ---
     st.subheader("3 · Attention"); explain("attention")
@@ -271,7 +364,40 @@ with tab_a:
                         yaxis=dict(autorange="reversed"),
                         xaxis_title="attended-to (key)", yaxis_title="query")
     st.plotly_chart(fig_a, width="stretch", key="attn")
+    if tr.n_tokens >= 2:
+        qrow = tr.attentions[layer][head][last]
+        j = int(np.argmax(qrow[:last + 1]))
+        st.caption(f"👀 **What to notice:** at layer {layer}, head {head}, the **last token** (the one "
+                   f"predicting what comes next) attends most to **“{g.token_text(tr.token_ids[j])}”** "
+                   f"({qrow[j]:.0%}). The blank upper-right triangle is the causal mask — a token can "
+                   f"never look at future tokens.")
     st.caption(f"This model has **{cfg['n_head']} heads** per layer — change control 3 to compare.")
+    cmp_heads = st.toggle("⚖️ Compare 4 vs 8 heads side by side (same prompt & layer)",
+                          value=False, key="cmp_heads",
+                          help="Loads the sibling model with the other head count (same training "
+                               "data & volume) and shows both attention maps for the selected layer.")
+    if cmp_heads:
+        sib_h = 8 if n_head == 4 else 4
+        g_sib = load_model(f"{'g' if is_generic else 'd'}_{cur_v}_{sib_h}h", SRCVER)
+        if g_sib is None:
+            st.info("The sibling model for this comparison isn’t available.")
+        else:
+            entries = [(cfg["n_head"], tr, g),
+                       (g_sib.meta["cfg"]["n_head"], g_sib.trace(prompt), g_sib)]
+            entries.sort(key=lambda e: e[0])          # 4 heads on the left, 8 on the right
+            hc = st.columns(2)
+            for col, (nh, trh, gh) in zip(hc, entries):
+                labs = [gh.token_text(t) for t in trh.token_ids]
+                avg = trh.attentions[layer].mean(axis=0)      # average over heads at this layer
+                figc = go.Figure(go.Heatmap(z=avg, x=labs, y=labs, colorscale="Teal"))
+                figc.update_layout(height=340, margin=dict(l=6, r=6, t=30, b=6),
+                                   title=f"{nh} heads · layer {layer} · averaged over heads",
+                                   yaxis=dict(autorange="reversed"),
+                                   xaxis_title="key", yaxis_title="query")
+                col.plotly_chart(figc, width="stretch", key=f"attn_cmp_{nh}")
+            st.caption("Averaged across heads at the selected layer. On a model this small the "
+                       "4-vs-8-head difference is small and non-monotonic — more heads is **not** "
+                       "automatically better. That is an honest, checkable result, not a bug.")
 
     # --- (4) fine-tuning: biomarker tagging (ALWAYS shown so numbering stays 1-2-3-4-5) ---
     st.subheader("4 · Fine-tuning — biomarker tagging")
@@ -286,9 +412,10 @@ with tab_a:
                     "models), and this head just imitates the lexicon — it misses novel terms "
                     "and mishandles negation like *EGFR wild-type*.")
     if not want_ft:
-        st.info("This step is **inactive** because the model isn’t fine-tuned. Turn on "
-                "**control 4 · Fine-tuned = Yes** in the left panel to add the biomarker-tagging "
-                "head and highlight biomarkers in your prompt.")
+        st.markdown(chips(g, tr.token_ids), unsafe_allow_html=True)
+        st.info("These are your prompt’s tokens, **untagged**. Turn on **control 4 · Fine-tuned = "
+                "Yes** in the left panel to add the biomarker-tagging head — biomarkers (EGFR, "
+                "PD-L1, BRAF V600E…) will light up red here.")
     else:
         bio = load_bio(tag, SRCVER)
         if is_generic or bio is None:
@@ -303,20 +430,53 @@ with tab_a:
             st.caption(("🔴 tagged as biomarker: " + ", ".join(f"`{h}`" for h in hitnames))
                        if hitnames else "No biomarker tokens tagged in this prompt.")
 
-    # --- (g) generation + (h) output text ---
+    # --- (g) generation: the autoregressive loop, one token at a time ---
     st.subheader("5 · Generation" + (" + Retrieval (RAG)" if want_rag else ""))
     explain("generation")
-    lab = [t for t, _, _ in tr.topk][::-1]; val = [p for _, p, _ in tr.topk][::-1]
-    fig_g = go.Figure(go.Bar(x=val, y=lab, orientation="h", marker_color="#2e8b8b"))
-    fig_g.update_layout(height=300, margin=dict(l=6, r=6, t=28, b=6),
-                        title="Next-token probability (top-k)", xaxis_title="probability")
+
+    gen = gen_cached(tag, prompt, max_new, temperature, top_k, SRCVER)
+    gsteps = gen["steps"]
+    st.markdown("##### 🔁 One token at a time")
+    st.caption("A language model writes by repeating a single step: read the text so far, give "
+               "every possible next token a probability, sample one, append it — then repeat. Drag "
+               "the slider to walk the loop. The **temperature** and **top-k** sliders up top "
+               "reshape the bars live.")
+    si = st.slider("tokens generated so far", 1, len(gsteps), 1, key="genstep")
+    step = gsteps[si - 1]
+
+    # running text = prompt + tokens generated up to this step; the token added HERE is highlighted
+    def _piece(t):
+        return html.escape(t.replace("␣", " "))
+    head_html = esc(prompt) + "".join(_piece(gsteps[j]["token"]) for j in range(si - 1))
+    new_html = (f"<span style='background:#d1495b;color:#fff;border-radius:3px;padding:0 2px'>"
+                f"{_piece(step['token'])}</span>")
+    st.markdown(
+        f"<div style='border:2px solid #2e8b8b;border-radius:10px;padding:14px 16px;"
+        f"background:#0e2a2a55;font-size:1.1rem;line-height:1.6;white-space:pre-wrap;"
+        f"font-family:ui-monospace,monospace;color:#eef5f5'>{head_html}{new_html}</div>",
+        unsafe_allow_html=True)
+
+    # the distribution this step sampled from (after temperature + top-k); sampled token in red
+    sd = step["dist"]
+    lab = [t for t, _, _ in sd][::-1]
+    val = [p for _, p, _ in sd][::-1]
+    bar_col = ["#d1495b" if pk else "#2e8b8b" for _, _, pk in sd][::-1]
+    picked_txt = step["token"].replace("␣", " ").strip() or "␣"
+    fig_g = go.Figure(go.Bar(x=val, y=lab, orientation="h", marker_color=bar_col))
+    fig_g.update_layout(height=300, margin=dict(l=6, r=6, t=30, b=6),
+                        title=f"Step {si}: next-token candidates — sampled “{picked_txt}” "
+                              f"(p = {step['prob']:.0%})",
+                        xaxis_title="probability")
     st.plotly_chart(fig_g, width="stretch", key="gen")
+    st.caption("🔴 = the token sampled at this step (then appended above); the others are the "
+               "runners-up. Low **temperature** makes the top bar tower over the rest (safe, "
+               "repetitive); high temperature flattens them (varied, riskier); a smaller **top-k** "
+               "zeroes out the tail so fewer tokens can be chosen.")
 
     if not want_rag:
-        st.markdown("#### 📤 Output text — the model continues your prompt")
-        out = gen_cached(tag, prompt, max_new, temperature, top_k, SRCVER)
-        output_box(out["text"])
-        st.caption(f"⚠️ {out['watermark']}")
+        st.markdown("#### 📤 Final output — the whole continuation")
+        output_box(gen["text"])
+        st.caption(f"⚠️ {gen['watermark']}")
     else:
         explain("rag")
         embs, chunks = load_rag(SRCVER)

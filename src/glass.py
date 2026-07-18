@@ -108,8 +108,32 @@ class GlassModel:
         )
 
     @torch.no_grad()
-    def generate(self, prompt, max_new_tokens=40, temperature=0.8, top_k=40, seed=0):
-        """Autoregressive generation; returns text + per-step top-k for the generation panel."""
+    def dist(self, logits, temperature=1.0, top_k=0, show=10):
+        """Next-token display distribution AFTER temperature + top-k, mirroring generate().
+
+        `logits` is the raw (vocab,) logit vector (e.g. `trace.logits`). Returns
+        list[(token_text, prob)] for the top-`show` candidates, high→low. This is what the
+        model actually samples from, so the generation panel's bars respond to the sliders
+        (low temperature sharpens toward one token; a small top-k zeroes out the tail)."""
+        lg = torch.as_tensor(np.asarray(logits, dtype=np.float32)).clone()
+        lg = lg / max(float(temperature), 1e-6)
+        if top_k:
+            v, _ = torch.topk(lg, min(int(top_k), lg.numel()))
+            lg[lg < v[-1]] = -float("inf")
+        probs = F.softmax(lg, dim=-1)
+        pv, pi = torch.topk(probs, min(int(show), probs.numel()))
+        return [(self.token_text(int(t)), float(pr)) for pr, t in zip(pv, pi)]
+
+    @torch.no_grad()
+    def generate(self, prompt, max_new_tokens=40, temperature=0.8, top_k=40, seed=0, show=8):
+        """Autoregressive generation. Returns the full text plus, for every step, the candidate
+        distribution (AFTER temperature + top-k) with the sampled token flagged — so the
+        dashboard can replay the loop one token at a time. Sampling is unchanged, so `text` is
+        still deterministic for a given seed.
+
+        Each `steps` entry is a dict: {token, prob, dist}, where dist is a list of
+        (token_text, prob, is_sampled) for the shown candidates (the sampled token is always
+        included, even if it fell outside the top-`show`)."""
         torch.manual_seed(seed)
         ids = self._encode_capped(prompt)
         steps = []
@@ -122,7 +146,11 @@ class GlassModel:
                 logits[logits < v[-1]] = -float("inf")
             probs = F.softmax(logits, dim=-1)
             nxt = int(torch.multinomial(probs, 1))
-            steps.append((self.token_text(nxt), float(probs[nxt])))
+            pv, pi = torch.topk(probs, min(show, probs.numel()))
+            cand = [(self.token_text(int(t)), float(pr), int(t) == nxt) for pr, t in zip(pv, pi)]
+            if not any(picked for *_, picked in cand):     # keep the sampled token visible
+                cand.append((self.token_text(nxt), float(probs[nxt]), True))
+            steps.append({"token": self.token_text(nxt), "prob": float(probs[nxt]), "dist": cand})
             ids.append(nxt)
         text = self.tok.decode(ids)
         return {"text": text, "steps": steps, "watermark": WATERMARK}

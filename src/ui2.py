@@ -237,8 +237,10 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
     inp_i = col([f"“{(input_text or '…').strip()[:20]}…”"], 0.01, "#8a6bbf",
                 [f"Your input text — {len(input_text or '')} characters"])
     tok_i = col(toks, 0.085, "#2e8b8b", [f"token: {t}" for t in toks])
-    vec_i = col([f"e₀={v:+.2f}" for v in e0], 0.16, "#3f8f9e",
-                [f"{t} → a 128-number vector; first component e₀={v:+.3f}" for t, v in zip(toks, e0)])
+    vec_i = col(["128-d"] * n, 0.16, "#3f8f9e",
+                [f"“{t}” → a list of 128 numbers (its embedding), e.g. [{v:+.2f}, …]. "
+                 f"Similar tokens get similar vectors — see the Embeddings panel."
+                 for t, v in zip(toks, e0)])
 
     # ----- middle: the per-layer Attention→Feed-Forward spine, or one collapsed hub -----
     if expand:
