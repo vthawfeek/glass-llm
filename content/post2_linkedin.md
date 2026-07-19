@@ -1,6 +1,6 @@
 <!-- DRAFT for your review. Series post 2 (the counterintuitive finding). Gate: model size;
 mechanism not intelligence; no medical advice; numbers match repo.
-Attach: a side-by-side of the low-data vs high-data generation. -->
+Attach: demo_media/mp4/03_data_volume_memorise_vs_generalise.mp4 (the held-out BPB gauge flipping green<->red as volume changes). -->
 
 I trained the same tiny model on 1 MB and on 32 MB of clinical trials. The small-data version sounded more fluent. That turns out to be the trap.
 
@@ -14,7 +14,7 @@ The 1 MB model produces clean lines like "Age >= 18 to 80 years old", so by eye 
 
 This is why we measure held-out perplexity instead of trusting how the output reads. Fluent is not the same as learned. A model that has memorised its training set demos beautifully and generalises badly, and in a small-data setting (a rare disease, a new target, one site's records) that trap is the default rather than the exception.
 
-In the dashboard, all three sizes sit on one held-out bits-per-byte scale — the size you pick highlighted, with a plain "memorised" versus "generalises" verdict — so you see the trap instead of trusting how fluent the output looks.
+In the dashboard, all three sizes sit on one held-out bits-per-byte scale, with the size you pick highlighted and a plain "memorised" versus "generalises" verdict, so you see the trap instead of trusting how fluent the output looks.
 
 The model is about 1.3M parameters and everything it writes is watermarked SYNTHETIC. It is not medical information.
 

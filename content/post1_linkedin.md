@@ -1,6 +1,6 @@
 <!-- DRAFT for your review. Series post 1 (intro). Pre-publication gate: model size stated;
 mechanism not intelligence; prior art nod; numbers verifiable in repo; no medical advice / SYNTHETIC framing.
-Attach: a short screen capture of changing a dropdown and the panels updating. -->
+Attach: demo_media/mp4/01_pipeline_no_black_box.mp4 (the whole flow, no black box). Alt: 04_attention_layers_and_head_compare or 06_temperature_cautious_vs_creative. -->
 
 You can't see inside a language model, so I built one you can.
 

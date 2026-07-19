@@ -1,6 +1,6 @@
 <!-- DRAFT for your review. Series post 3 (the tokenizer tool, honestly). Gate: cost/context = fact,
 quality = flag; no overclaim (GPT-4 is competitive); prior art; numbers match repo; no medical advice.
-Attach: the audit-panel table. -->
+Attach: demo_media/mp4/08_tokenizer_audit_vs_gpt4.mp4 (audit table + bar chart vs GPT-4/4o/2/BERT); pair with 02_tokenizer_clinical_vs_english.mp4 (the same text through both tokenizers, 27 vs 43). -->
 
 GPT-4 doesn't read the word "pembrolizumab". It reads p, emb, rol, iz, um, ab: six fragments. Here is what that costs, and what it doesn't.
 
