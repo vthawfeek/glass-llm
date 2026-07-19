@@ -14,11 +14,11 @@ GLOSSARY = {
                       "short word or word-fragment.",
     "bpb": "Bits-per-byte: how well the model predicts held-out text, normalized by raw bytes so "
            "tokenizers with different vocabularies are comparable. Lower is better.",
-    "token": "The unit a model actually reads — a whole word or a word-fragment drawn from a fixed "
+    "token": "The unit a model actually reads, a whole word or a word-fragment drawn from a fixed "
              "vocabulary. Models never see raw letters as words; they see tokens.",
     "tokens_per_word": "Average number of tokens each word is split into. Lower = less fragmentation "
                        "= cheaper and more context left for real content.",
-    "attention": "Each layer has several attention 'heads' — parallel lenses that learn to focus on "
+    "attention": "Each layer has several attention 'heads', parallel lenses that learn to focus on "
                  "different relationships between tokens (e.g. a word and the one it depends on).",
     "cosine": "How aligned two vectors are, from -1 to 1. 1 = same direction (very similar meaning "
               "in the model's embedding space).",
@@ -27,7 +27,7 @@ GLOSSARY = {
     "logits": "The model's raw score for every possible next token, before they're turned into "
               "probabilities by softmax.",
     "rag": "Retrieval-Augmented Generation: fetch relevant real documents first, then hand them to "
-           "the model as context — so answers are grounded in sources instead of invented.",
+           "the model as context, so answers are grounded in sources instead of invented.",
     "fertility": "Tokens per term. A tokenizer with lower fertility splits your vocabulary into "
                  "fewer pieces.",
     "pca": "Principal Component Analysis: squashes the high-dimensional embedding space down to 3 "
@@ -43,21 +43,21 @@ def help_for(key):
 # "how it works" with an analogy (tucked in an expander). Inspired by Transformer Explainer. ----
 EXPLAIN = {
     "tokenization": {
-        "headline": "**First, your text is chopped into _tokens_** — whole words or word-fragments "
+        "headline": "**First, your text is chopped into _tokens_**, whole words or word-fragments "
                     "drawn from a fixed list of 4,096 pieces this model knows.",
-        "how": "A language model can't read raw letters — it only knows a fixed vocabulary. A "
+        "how": "A language model can't read raw letters, it only knows a fixed vocabulary. A "
                "byte-pair tokenizer builds that vocabulary by repeatedly merging the most common "
                "character pairs. So common words like *metastatic* become **one** token, while a "
                "rare word like *pembrolizumab* gets shattered into several. Fewer, cleaner tokens "
-               "means the model spends less effort just recognising a word — and it's why a "
+               "means the model spends less effort just recognising a word, and it's why a "
                "clinical tokenizer beats a general one on biomedical text.",
     },
     "embeddings": {
-        "headline": "**Each token becomes a _vector_** — a list of 128 numbers that stands for its "
+        "headline": "**Each token becomes a _vector_**, a list of 128 numbers that stands for its "
                     "meaning. Tokens with similar meanings sit close together.",
         "how": "Think of a map of meaning: *cancer*, *tumor*, and *carcinoma* end up in the same "
                "neighbourhood; *the* and *of* end up somewhere else. The model *learned* these "
-               "positions during training. The real space has 128 dimensions — we flatten it to 3 "
+               "positions during training. The real space has 128 dimensions, we flatten it to 3 "
                "with PCA so you can see it. Drag to rotate; your prompt's tokens are the red dots.",
     },
     "attention": {
@@ -66,7 +66,7 @@ EXPLAIN = {
         "how": "It works like a search engine. Each token writes a **Query** ('what am I looking "
                "for?'), every earlier token offers a **Key** ('here's what I am'), and the best "
                "matches pass along their **Value** ('here's my content'). Each **row** of the "
-               "heatmap sums to 1 — it shows how much that token attends to every earlier token "
+               "heatmap sums to 1, it shows how much that token attends to every earlier token "
                "(it can't peek ahead, so the top-right is blank). A model with more **heads** "
                "tracks more of these relationships at once.",
     },
@@ -76,23 +76,23 @@ EXPLAIN = {
         "how": "Those raw scores are called *logits*. **Temperature** divides them before softmax: "
                "low (÷0.2) sharpens toward the single best guess (confident, repetitive); high "
                "(÷1.4) flattens the odds (creative, riskier). **top-k** keeps only the k most "
-               "likely candidates. The chosen token is turned back into text — then the whole loop "
+               "likely candidates. The chosen token is turned back into text, then the whole loop "
                "repeats to produce the next token.",
     },
     "audit": {
         "headline": "**Same terms, different tokenizers.** See how real LLMs (GPT-4, GPT-4o, GPT-2, "
-                    "BERT) split _your_ vocabulary — and what that costs.",
+                    "BERT) split _your_ vocabulary, and what that costs.",
         "how": "Every tokenizer has a different vocabulary, so it fragments the same word "
-               "differently — *pembrolizumab* is 2 tokens for our clinical tokenizer, 6 for "
+               "differently, *pembrolizumab* is 2 tokens for our clinical tokenizer, 6 for "
                "GPT-4's. **Cost and context are facts**: you pay per token and your context window "
-               "is counted in tokens. **Quality is only a flag** — heavy fragmentation is a risk "
+               "is counted in tokens. **Quality is only a flag**, heavy fragmentation is a risk "
                "to test for rare terms, not proof the model understands them worse.",
     },
     "rag": {
         "headline": "**Retrieval happens _outside_ the model.** Before answering, we fetch real "
                     "trial records and hand them to the model as context.",
         "how": "The question is turned into a vector, then compared (by cosine similarity) against "
-               "a stored index of real trial chunks — the same nearest-neighbour operation a "
+               "a stored index of real trial chunks, the same nearest-neighbour operation a "
                "vector database (FAISS, Chroma) performs. The best matches, with their NCT IDs, "
                "become context. **Left:** the model alone invents a plausible but fake trial. "
                "**Right:** grounded in retrieved real records. This is why RAG reduces "
@@ -114,7 +114,7 @@ MODELS = {
                              "pieces in the Tokenization step.",
                      "highlight": "tokenizer", "tok": "general_4096"},
     "arch_8head":   {"short": "🔎 More attention",
-                     "diff": "Same as Clinical, but with 8 attention heads instead of 4 — more "
+                     "diff": "Same as Clinical, but with 8 attention heads instead of 4, more "
                              "parallel 'lenses' looking at the text. Watch the Attention step change.",
                      "highlight": "attention", "tok": "domain_4096"},
     "ft_biologics": {"short": "💉 Biologics-tuned",

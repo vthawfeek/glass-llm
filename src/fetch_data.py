@@ -93,7 +93,7 @@ def fetch_trials(area, max_trials, quick, intervention_type=""):
             out_txt = "; ".join(
                 o.get("measure", "") + (": " + o["description"] if o.get("description") else "")
                 for o in outs if o.get("measure"))
-            # all CURATED narrative/design sections — no admin junk (sponsors/sites/dates/IDs)
+            # all CURATED narrative/design sections, no admin junk (sponsors/sites/dates/IDs)
             body = clean("\n\n".join(filter(None, [
                 "Title: " + title if title else "",
                 "Conditions: " + ", ".join(conds) if conds else "",

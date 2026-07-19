@@ -1,10 +1,10 @@
-"""Tokenizer audit — one uniform interface over our from-scratch tokenizers and real production
+"""Tokenizer audit, one uniform interface over our from-scratch tokenizers and real production
 tokenizers (GPT-4, GPT-4o, GPT-2, BERT). Loads entirely from the repo-local cache (offline)."""
 import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-# force offline: use only the pre-cached blobs (R4) — no runtime network on the deploy host
+# force offline: use only the pre-cached blobs (R4), no runtime network on the deploy host
 os.environ.setdefault("TIKTOKEN_CACHE_DIR", str(ROOT / "assets" / "tiktoken_cache"))
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")

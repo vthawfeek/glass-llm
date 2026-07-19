@@ -1,15 +1,15 @@
-"""Glass-LLM v2 — an interactive glass box for language models on CLINICAL-TRIAL text.
+"""Glass-LLM v2, an interactive glass box for language models on CLINICAL-TRIAL text.
 
 Two tabs:
-  • Model explorer — a collapsible left panel with 5 dropdowns (data domain, data volume,
+  • Model explorer, a collapsible left panel with 5 dropdowns (data domain, data volume,
     attention heads, fine-tuning, RAG). Every change re-selects a real trained model and
     re-renders the architecture, a token→vector→text Sankey, and the tokenization /
     embeddings / attention / generation panels, plus biomarker tagging and retrieval.
-  • Tokenizer audit — how every knob-combination and real LLMs (GPT-4/4o/2, BERT) tokenize
+  • Tokenizer audit, how every knob-combination and real LLMs (GPT-4/4o/2, BERT) tokenize
     your terms.
 
 Highlight is TRANSPARENCY (watch each internal step), not model intelligence. Every
-generated string is watermarked SYNTHETIC and scoped to trial metadata — not medical advice.
+generated string is watermarked SYNTHETIC and scoped to trial metadata, not medical advice.
 """
 import sys, os, html, importlib
 from pathlib import Path
@@ -118,8 +118,8 @@ def output_box(text, tint="#2e8b8b"):
 # ================================= header =================================
 st.title("🧬 Glass-LLM · Clinical Trials")
 st.caption("Pick a model on the left; watch text flow through it, step by step. All five "
-           "controls select a **real trained model** — nothing here is a mock-up.")
-st.warning(f"⚠️ {WATERMARK}. Scope: clinical-trial metadata only — not medical advice.")
+           "controls select a **real trained model**, nothing here is a mock-up.")
+st.warning(f"⚠️ {WATERMARK}. Scope: clinical-trial metadata only, not medical advice.")
 
 
 # ============================ left panel: 5 dropdowns ============================
@@ -152,24 +152,24 @@ with tab_a:
     g = load_model(tag, SRCVER)
     if g is None:
         st.info(f"⏳ Model **{tag}** isn’t built yet. The zoo (12 models + heads + index) is "
-                f"training — rerun once `models_v2/{tag}.pt` exists.")
+                f"training, rerun once `models_v2/{tag}.pt` exists.")
         st.stop()
     cfg = g.meta["cfg"]
 
-    # --- (a) INPUT TEXT — the first thing under the SYNTHETIC banner ---
-    st.info("This is a small **text-completion** model (~1.3M parameters, like an early GPT-2) — "
+    # --- (a) INPUT TEXT, the first thing under the SYNTHETIC banner ---
+    st.info("This is a small **text-completion** model (~1.3M parameters, like an early GPT-2), "
             "**not** a chatbot. It predicts what text comes next.")
     with st.expander("👋 New here? Three quick things to try", expanded=False):
         st.markdown(
-            "1. **Flip control 1 (Training data) to 📖 English books** — watch *pembrolizumab* "
+            "1. **Flip control 1 (Training data) to 📖 English books**, watch *pembrolizumab* "
             "shatter into more pieces in **step 1 · Tokenization**.\n"
-            "2. **Set control 2 (Data volume) to Low (1 MB)** — the gauge below flips to a "
+            "2. **Set control 2 (Data volume) to Low (1 MB)**, the gauge below flips to a "
             "‘memorised’ warning: the model looks fluent but predicts unseen trials worst.\n"
-            "3. **In step 5 · Generation, drag temperature from 0.1 to 1.5** — watch the next-token "
+            "3. **In step 5 · Generation, drag temperature from 0.1 to 1.5**, watch the next-token "
             "bars go from one tall spike to a flat spread, then step the loop one token at a time.")
     with st.expander("🗺️ What each control changes (and what it doesn’t)"):
         st.table(pd.DataFrame(
-            [["1 · Training data", "✅ Yes", "Tokenization (step 1) — and every step downstream"],
+            [["1 · Training data", "✅ Yes", "Tokenization (step 1), and every step downstream"],
              ["2 · Data volume", "No", "Generation + the BPB gauge (memorise ↔ generalise)"],
              ["3 · Attention heads", "No", "The attention maps (step 3)"],
              ["4 · Fine-tuning", "No", "The fine-tuning panel (biomarker tags light up)"],
@@ -177,7 +177,7 @@ with tab_a:
             columns=["Control", "Changes the tokenizer?", "Where you see its effect"]))
         st.caption("Every control selects a *different trained model*, so all downstream numbers "
                    "shift; the table shows where each one is **designed** to be read. Only control 1 "
-                   "changes how text is split into tokens — the audit tab proves it.")
+                   "changes how text is split into tokens, the audit tab proves it.")
     default_prompt = ("What are the eligibility criteria for an osimertinib trial in "
                       "EGFR T790M-positive lung cancer?")
     st.markdown("#### ✍️ Input text")
@@ -241,24 +241,24 @@ with tab_a:
         clbl, cmb, cbpb = cur_b[0], cur_b[1], cur_b[2]
         if clbl == "Low":
             st.warning(
-                f"⚠️ With only **{cmb}** of text, this model scores **worst** on held-out trials — "
+                f"⚠️ With only **{cmb}** of text, this model scores **worst** on held-out trials, "
                 f"**{cbpb:.2f}** bits-per-byte. In 4,000 steps it passes over that little text ~30 "
                 f"times and **memorises** it: the output can look fluent while it is really reciting. "
                 f"Raise the volume and watch this number drop.")
         elif clbl == "High":
             st.success(
-                f"✅ With **{cmb}** of text, this model **generalises best** — **{cbpb:.2f}** "
+                f"✅ With **{cmb}** of text, this model **generalises best**, **{cbpb:.2f}** "
                 f"bits-per-byte, the lowest here. More data → it learns patterns instead of "
                 f"memorising a small corpus. Drop the volume to **Low** to watch memorisation set in.")
         else:
             st.info(
                 f"With **{cmb}** of text ({cbpb:.2f} bpb) this model sits between memorising "
                 f"(**Low**, {worst[2]:.2f} bpb) and generalising (**High**, {best[2]:.2f} bpb).")
-        st.caption("Same architecture, tokenizer, and 4,000 training steps — only the amount of "
+        st.caption("Same architecture, tokenizer, and 4,000 training steps, only the amount of "
                    "training text changes. This is the one thing you can't judge from the output by "
                    "eye: **fluent is not the same as learned.**")
 
-    # --- (c) the pipeline Sankey — real per-layer Attention→FFN chain (collapsible), no black box ---
+    # --- (c) the pipeline Sankey, real per-layer Attention→FFN chain (collapsible), no black box ---
     st.markdown("##### The flow, as one picture")
     expand_layers = st.toggle(
         "Expand the transformer layers (Attention + Feed-Forward, one pair per layer)",
@@ -289,7 +289,7 @@ with tab_a:
                "**text**. When expanded, each node’s Δ is how much that sublayer writes into the "
                "residual stream. The spine follows the final token (the position that predicts the "
                "next one); the fan-in on the left is where the other tokens enter, via attention. "
-               "Note the **attention node sums over all heads** — switch control 3 (4↔8 heads) to see "
+               "Note the **attention node sums over all heads**, switch control 3 (4↔8 heads) to see "
                "the per-head detail in the **Attention** panel below; here it changes the numbers "
                "(a different trained model), not the diagram’s shape.")
 
@@ -302,8 +302,8 @@ with tab_a:
     m[1].metric("words", nwords)
     m[2].metric("tokens / word", f"{tr.n_tokens/nwords:.2f}", help=ui.help_for("tokens_per_word"))
 
-    # the SAME text through both tokenizers — what control 1 (training data) changes, in place
-    st.markdown("**The same text through both tokenizers** — this is what **control 1 "
+    # the SAME text through both tokenizers, what control 1 (training data) changes, in place
+    st.markdown("**The same text through both tokenizers**, this is what **control 1 "
                 "(training data)** changes:")
     gc1, gc2 = st.columns(2)
     for col, dp, lbl in [(gc1, "d", "🏥 Clinical-trials tokenizer"),
@@ -314,13 +314,13 @@ with tab_a:
         ids2 = gg.tok.encode(prompt)[-gg.ctx:]
         active = (dp == "g") == is_generic
         mark = " · ← your model" if active else ""
-        col.markdown(f"<div style='color:#9ab;font-size:.9em'>{lbl} — <b>{len(ids2)} tokens</b>"
+        col.markdown(f"<div style='color:#9ab;font-size:.9em'>{lbl}, <b>{len(ids2)} tokens</b>"
                      f"{mark}</div>", unsafe_allow_html=True)
         col.markdown(chips(gg, ids2), unsafe_allow_html=True)
     st.caption("Fewer, cleaner pieces on medical words = cheaper and more usable context. Volume, "
-               "heads, fine-tuning and RAG do **not** change tokenization — only control 1 does.")
+               "heads, fine-tuning and RAG do **not** change tokenization, only control 1 does.")
 
-    # --- (e) embeddings — lead with the intuition (nearest neighbours), map is secondary ---
+    # --- (e) embeddings, lead with the intuition (nearest neighbours), map is secondary ---
     st.subheader("2 · Embeddings"); explain("embeddings")
     uniq = list(dict.fromkeys(tr.token_ids))
     if uniq:
@@ -332,7 +332,7 @@ with tab_a:
         st.table({"token": [t for t, _, _ in nn],
                   "cosine similarity": [round(s, 3) for _, s, _ in nn]})
         st.caption("Cosine similarity: **1.00 = same direction (most alike)**, 0 = unrelated. These "
-                   "neighbours are *learned* from the training text — switch control 1 and watch them "
+                   "neighbours are *learned* from the training text, switch control 1 and watch them "
                    "change (a clinical model clusters genes and drugs; an English one doesn’t).")
     with st.expander("🌐 See the whole vocabulary as a 3D map (drag to rotate)"):
         coords = pca3(tag, SRCVER)
@@ -369,9 +369,9 @@ with tab_a:
         j = int(np.argmax(qrow[:last + 1]))
         st.caption(f"👀 **What to notice:** at layer {layer}, head {head}, the **last token** (the one "
                    f"predicting what comes next) attends most to **“{g.token_text(tr.token_ids[j])}”** "
-                   f"({qrow[j]:.0%}). The blank upper-right triangle is the causal mask — a token can "
+                   f"({qrow[j]:.0%}). The blank upper-right triangle is the causal mask, a token can "
                    f"never look at future tokens.")
-    st.caption(f"This model has **{cfg['n_head']} heads** per layer — change control 3 to compare.")
+    st.caption(f"This model has **{cfg['n_head']} heads** per layer, change control 3 to compare.")
     cmp_heads = st.toggle("⚖️ Compare 4 vs 8 heads side by side (same prompt & layer)",
                           value=False, key="cmp_heads",
                           help="Loads the sibling model with the other head count (same training "
@@ -396,25 +396,25 @@ with tab_a:
                                    xaxis_title="key", yaxis_title="query")
                 col.plotly_chart(figc, width="stretch", key=f"attn_cmp_{nh}")
             st.caption("Averaged across heads at the selected layer. On a model this small the "
-                       "4-vs-8-head difference is small and non-monotonic — more heads is **not** "
+                       "4-vs-8-head difference is small and non-monotonic, more heads is **not** "
                        "automatically better. That is an honest, checkable result, not a bug.")
 
     # --- (4) fine-tuning: biomarker tagging (ALWAYS shown so numbering stays 1-2-3-4-5) ---
-    st.subheader("4 · Fine-tuning — biomarker tagging")
+    st.subheader("4 · Fine-tuning, biomarker tagging")
     st.markdown("**A task head added on top of the frozen model** learns to tag biomarker "
-                "mentions. This is a *mechanism* demo — watch which tokens light up.")
+                "mentions. This is a *mechanism* demo, watch which tokens light up.")
     with st.expander("ⓘ How does this work? (plain English)"):
         st.markdown("Fine-tuning here adds a small classifier on top of the model’s final "
                     "vectors, trained on clinical text where genes/biomarkers were "
                     "auto-labeled (distant supervision). It shows *how* fine-tuning bolts a "
                     "task onto a base model. It is **not** a real biomarker extractor: a "
                     "1.3M model can’t structure biomarkers (the state of the art uses ~7B "
-                    "models), and this head just imitates the lexicon — it misses novel terms "
+                    "models), and this head just imitates the lexicon, it misses novel terms "
                     "and mishandles negation like *EGFR wild-type*.")
     if not want_ft:
         st.markdown(chips(g, tr.token_ids), unsafe_allow_html=True)
         st.info("These are your prompt’s tokens, **untagged**. Turn on **control 4 · Fine-tuned = "
-                "Yes** in the left panel to add the biomarker-tagging head — biomarkers (EGFR, "
+                "Yes** in the left panel to add the biomarker-tagging head, biomarkers (EGFR, "
                 "PD-L1, BRAF V600E…) will light up red here.")
     else:
         bio = load_bio(tag, SRCVER)
@@ -438,7 +438,7 @@ with tab_a:
     gsteps = gen["steps"]
     st.markdown("##### 🔁 One token at a time")
     st.caption("A language model writes by repeating a single step: read the text so far, give "
-               "every possible next token a probability, sample one, append it — then repeat. Drag "
+               "every possible next token a probability, sample one, append it, then repeat. Drag "
                "the slider to walk the loop. The **temperature** and **top-k** sliders up top "
                "reshape the bars live.")
     si = st.slider("tokens generated so far", 1, len(gsteps), 1, key="genstep")
@@ -464,7 +464,7 @@ with tab_a:
     picked_txt = step["token"].replace("␣", " ").strip() or "␣"
     fig_g = go.Figure(go.Bar(x=val, y=lab, orientation="h", marker_color=bar_col))
     fig_g.update_layout(height=300, margin=dict(l=6, r=6, t=30, b=6),
-                        title=f"Step {si}: next-token candidates — sampled “{picked_txt}” "
+                        title=f"Step {si}: next-token candidates, sampled “{picked_txt}” "
                               f"(p = {step['prob']:.0%})",
                         xaxis_title="probability")
     st.plotly_chart(fig_g, width="stretch", key="gen")
@@ -474,16 +474,16 @@ with tab_a:
                "zeroes out the tail so fewer tokens can be chosen.")
 
     if not want_rag:
-        st.markdown("#### 📤 Final output — the whole continuation")
+        st.markdown("#### 📤 Final output, the whole continuation")
         output_box(gen["text"])
         st.caption(f"⚠️ {gen['watermark']}")
     else:
         explain("rag")
         embs, chunks = load_rag(SRCVER)
         if embs is None:
-            st.info("RAG index not built yet — it’s created at the end of the zoo build.")
+            st.info("RAG index not built yet, it’s created at the end of the zoo build.")
         else:
-            st.caption("Retrieval uses the **same prompt** from the top of the page — one input "
+            st.caption("Retrieval uses the **same prompt** from the top of the page, one input "
                        "drives every step. A topic/keyword prompt (a condition, drug, or biomarker) "
                        "retrieves best.")
             k = st.slider("retrieved trials (top-k)", 1, 8, 4,
@@ -492,12 +492,12 @@ with tab_a:
             hits = rag.query(embed_model, embs, chunks, prompt, k=k)
             colL, colR = st.columns(2)
             with colL:
-                st.markdown("##### ❌ Without retrieval — the model alone")
+                st.markdown("##### ❌ Without retrieval, the model alone")
                 out = gen_cached(tag, prompt, 40, temperature, top_k, SRCVER)
                 output_box(out["text"], tint="#d1495b")
                 st.caption("⚠️ Invented, plausible-sounding specifics (hallucination).")
             with colR:
-                st.markdown("##### ✅ With retrieval — grounded in real trials")
+                st.markdown("##### ✅ With retrieval, grounded in real trials")
                 for nct, text, score in hits:
                     st.markdown(f"**[{nct}]** · similarity `{score:.3f}`")
                     st.caption(text[:200] + ("…" if len(text) > 200 else ""))
@@ -526,7 +526,7 @@ with tab_b:
     if terms and have:
         table = {n: [audit.count(n, t) for t in terms] for n in have}
         df = pd.DataFrame(table, index=terms)
-        df.loc["— mean tokens/term —"] = [round(audit.fertility(n, terms), 2) for n in have]
+        df.loc["mean tokens / term"] = [round(audit.fertility(n, terms), 2) for n in have]
         st.dataframe(df, width="stretch")
         means = [audit.fertility(n, terms) for n in have]
         colors = ["#2e8b8b" if n.startswith("Ours") else "#d1495b" for n in have]
@@ -536,7 +536,7 @@ with tab_b:
         st.plotly_chart(fig, width="stretch", key="audit_bar")
         st.info("**Key insight:** among your five controls, only **control 1 (data domain)** "
                 "changes tokenization. Volume, attention heads, fine-tuning and RAG do **not** "
-                "touch the tokenizer — so all their combinations give identical columns. That’s "
+                "touch the tokenizer, so all their combinations give identical columns. That’s "
                 "why there are two ‘Ours’ columns, not 48.")
         with st.expander("Show all 48 parameter combinations (proving the invariance)"):
             combos, tok_of = [], {}
@@ -552,9 +552,9 @@ with tab_b:
             st.dataframe(pd.DataFrame(wide, index=terms), width="stretch")
             st.caption("Every ‘D·…’ column is identical (the clinical-trials tokenizer); every "
                        "‘G·…’ column is identical (the English tokenizer). Tokenization depends "
-                       "only on the tokenizer — a real, load-bearing teaching point.")
+                       "only on the tokenizer, a real, load-bearing teaching point.")
     elif not have:
-        st.info("Tokenizers not built yet — the clinical-trials (domain) tokenizer is created "
+        st.info("Tokenizers not built yet, the clinical-trials (domain) tokenizer is created "
                 "during the zoo build.")
     st.caption("⚠️ Fragmentation flags a risk for rare terms and exact-match tasks; it does not "
                "by itself prove worse quality. Cost & context are facts (you pay per token); "

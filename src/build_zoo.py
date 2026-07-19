@@ -1,4 +1,4 @@
-"""Build the model zoo for the v2 clinical-trials glass-box dashboard — idempotent.
+"""Build the model zoo for the v2 clinical-trials glass-box dashboard, idempotent.
 
 Base LMs (12) = {domain=clinical trials, generic=English} x {low,med,high data} x {4,8 heads}
   - domain models: dom_4096 tokenizer, trained on ClinicalTrials.gov text (all specialties)

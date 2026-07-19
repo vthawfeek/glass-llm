@@ -1,9 +1,9 @@
 """UI helpers for the v2 clinical-trials glass-box dashboard.
 
 Adds two things the v1 helpers don't have:
-  * architecture_figure_v2 — a decoder schematic driven by ALL FIVE knobs (domain, volume,
+  * architecture_figure_v2, a decoder schematic driven by ALL FIVE knobs (domain, volume,
     heads, fine-tune head, RAG), lighting up whatever the current selection changes.
-  * pipeline_sankey — the literal text -> tokens -> vectors -> (model) -> re-tokenised ->
+  * pipeline_sankey, the literal text -> tokens -> vectors -> (model) -> re-tokenised ->
     text flow, with REAL token pieces and REAL embedding values on the nodes.
 Everything else (plain-language glossary, EXPLAIN cards, dataset card, journey CSS) is
 reused from ui.py so the two dashboards share one look and voice.
@@ -17,7 +17,7 @@ import ui  # reuse GLOSSARY / EXPLAIN / dataset_card_html / journey helpers / st
 KNOBS = {
     "domain": {
         "label": "1 · Training data",
-        "options": ["🏥 Domain — clinical trials", "📖 Generic — English books"],
+        "options": ["🏥 Domain: clinical trials", "📖 Generic: English books"],
         "help": "What text the model learned from. Domain = ClinicalTrials.gov trials, all "
                 "specialties (medical words are familiar). Generic = ordinary English novels "
                 "(medical words look foreign). Watch tokenization, embeddings and generation change.",
@@ -25,7 +25,7 @@ KNOBS = {
     "volume": {
         "label": "2 · Training-data volume",
         "options": ["Low (1 MB)", "Medium (8 MB)", "High (32 MB)"],
-        "help": "How MUCH text the model trained on — same tokenizer and same 4,000 training "
+        "help": "How MUCH text the model trained on, same tokenizer and same 4,000 training "
                 "steps, only the amount of data changes. Low = 1 MB (~0.25M tokens), "
                 "Medium = 8 MB (~2M tokens), High = 32 MB (~8M tokens). Too little data → the "
                 "model memorises and predicts held-out text worse (higher bits-per-byte).",
@@ -40,7 +40,7 @@ KNOBS = {
         "label": "4 · Fine-tuned (biomarker tagging)",
         "options": ["No", "Yes"],
         "help": "Adds a small task head on top of the FROZEN model, trained to TAG biomarker "
-                "mentions (EGFR, PD-L1, BRAF V600E…). A mechanism demo of fine-tuning — NOT a real "
+                "mentions (EGFR, PD-L1, BRAF V600E…). A mechanism demo of fine-tuning, NOT a real "
                 "extractor (a 1.3M model can't structure biomarkers; that needs ~7B models).",
     },
     "rag": {
@@ -69,14 +69,14 @@ ARCH_MATH = {
                   "Each text piece is matched to a fixed vocabulary to get an id, and each id "
                   "looks up a learned 128-number vector (its embedding)."),
     "pos":       ("x = E[tok] + P[pos]",
-                  "A position vector is added so the model knows token order — otherwise "
+                  "A position vector is added so the model knows token order, otherwise "
                   "'A then B' and 'B then A' would look the same."),
     "attention": ("softmax(QKᵀ/√d)·V",
                   "Each token makes a Query and matches earlier tokens' Keys; the best matches "
                   "pass on their Values. 'Masked' = it can't look at future tokens."),
     "an1":       ("LayerNorm(x + sublayer)",
                   "Add the sublayer's output back onto its input (a residual shortcut) and "
-                  "normalize — this keeps training stable."),
+                  "normalize, this keeps training stable."),
     "ff":        ("W₂·GELU(W₁x)",
                   "A small 2-layer network reshapes each token's vector on its own, storing "
                   "patterns the model learned from data."),
@@ -207,9 +207,9 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
                    hub for a clean overview (the same left/right context, just the middle folded).
 
     emb0         : first embedding component per input token (T,)
-    entry_attn   : last token's layer-1 attention over the inputs — the fan-in widths (T,)
-    attn_norms   : per-layer ||attention write|| for the last token — node labels (n_layer,)
-    ffn_norms    : per-layer ||feed-forward write|| for the last token — node labels (n_layer,)
+    entry_attn   : last token's layer-1 attention over the inputs, the fan-in widths (T,)
+    attn_norms   : per-layer ||attention write|| for the last token, node labels (n_layer,)
+    ffn_norms    : per-layer ||feed-forward write|| for the last token, node labels (n_layer,)
     stream_norms : residual-stream norm at the last token at each spine boundary,
                    length 1 + 2*n_layer = [entry, after-attn-1, after-ffn-1, after-attn-2, ...]
     """
@@ -235,11 +235,11 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
         return base
 
     inp_i = col([f"“{(input_text or '…').strip()[:20]}…”"], 0.01, "#8a6bbf",
-                [f"Your input text — {len(input_text or '')} characters"])
+                [f"Your input text, {len(input_text or '')} characters"])
     tok_i = col(toks, 0.085, "#2e8b8b", [f"token: {t}" for t in toks])
     vec_i = col(["128-d"] * n, 0.16, "#3f8f9e",
                 [f"“{t}” → a list of 128 numbers (its embedding), e.g. [{v:+.2f}, …]. "
-                 f"Similar tokens get similar vectors — see the Embeddings panel."
+                 f"Similar tokens get similar vectors, see the Embeddings panel."
                  for t, v in zip(toks, e0)])
 
     # ----- middle: the per-layer Attention→Feed-Forward spine, or one collapsed hub -----
@@ -263,7 +263,7 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
     else:
         mid_first = col([f"Attention + Feed-Forward · ×{n_layer} layers"], 0.52, "#c77d34",
                         [f"{n_layer} transformer layers, each = masked multi-head attention + a "
-                         f"feed-forward network.<br>Collapsed view — turn on “Expand the transformer "
+                         f"feed-forward network.<br>Collapsed view, turn on “Expand the transformer "
                          f"layers” to see each layer’s ‖Δ‖ write.<br>residual-stream norm entering: "
                          f"{R0:.2f} → leaving: {Rout:.2f}"])
         mid_last = mid_first
@@ -272,7 +272,7 @@ def pipeline_sankey(input_text, in_pieces, emb0, entry_attn, attn_norms, ffn_nor
                ["Project the final residual vector onto the whole vocabulary, then softmax "
                 "→ a probability for every possible next token"])
     prd_i = col([f"{t}·{p:.0%}" for t, p in topk], 0.93, "#d1495b",
-                [f"candidate next token “{t}” — probability {p:.1%}" for t, p in topk])
+                [f"candidate next token “{t}”, probability {p:.1%}" for t, p in topk])
     out_i = col([f"“{(out_text or '…')[:22]}”"], 0.99, "#6a8d3f",
                 ["The sampled continuation (SYNTHETIC)"])
 

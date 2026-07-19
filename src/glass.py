@@ -1,4 +1,4 @@
-"""The trace(prompt) API — the single interface every dashboard panel reads from.
+"""The trace(prompt) API, the single interface every dashboard panel reads from.
 Returns tokens, embeddings, per-layer/head attention, hidden states, and next-token logits
 in one structured object, plus a transparent generate() for the generation panel."""
 from pathlib import Path
@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bpe import BPETokenizer
 from model import GPT
 
-WATERMARK = "SYNTHETIC — interpretability demo, not medical information"
+WATERMARK = "SYNTHETIC: interpretability demo, not medical information"
 
 
 class Trace:
@@ -73,7 +73,7 @@ class GlassModel:
 
     @torch.no_grad()
     def embed(self, text):
-        """Mean-pooled final hidden state — a sentence vector for retrieval (RAG index)."""
+        """Mean-pooled final hidden state, a sentence vector for retrieval (RAG index)."""
         idx = torch.tensor([self._encode_capped(text)], dtype=torch.long)
         _, _, hiddens = self.model(idx, return_hidden=True)
         return hiddens[-1][0].mean(0).numpy()
@@ -127,7 +127,7 @@ class GlassModel:
     @torch.no_grad()
     def generate(self, prompt, max_new_tokens=40, temperature=0.8, top_k=40, seed=0, show=8):
         """Autoregressive generation. Returns the full text plus, for every step, the candidate
-        distribution (AFTER temperature + top-k) with the sampled token flagged — so the
+        distribution (AFTER temperature + top-k) with the sampled token flagged, so the
         dashboard can replay the loop one token at a time. Sampling is unchanged, so `text` is
         still deterministic for a given seed.
 

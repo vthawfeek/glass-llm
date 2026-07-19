@@ -1,11 +1,11 @@
-"""Biomarker span-tagging — the dashboard's 'fine-tune for a task' mechanism.
+"""Biomarker span-tagging, the dashboard's 'fine-tune for a task' mechanism.
 
 Honest framing (see README): a 1.3M from-scratch model CANNOT do real structured
-biomarker extraction — the state of the art needs ~7B models (Alkhoury et al., npj
+biomarker extraction, the state of the art needs ~7B models (Alkhoury et al., npj
 Digital Medicine 2025). What we build here is a *mechanism demo*: distant supervision
 from an oncology gene/biomarker lexicon labels each token, and a small linear head on
 top of the FROZEN base model learns to TAG biomarker mentions. You watch fine-tuning
-add a task head and light up biomarker tokens — you must NOT read it as an extractor.
+add a task head and light up biomarker tokens, you must NOT read it as an extractor.
 The head imitates the lexicon; it will miss novel terms and mishandle negation.
 """
 import json
@@ -33,7 +33,7 @@ BIOMARKERS = [
     "TMB", "HRD", "Ki-67", "Ki67", "BCR-ABL", "HER2/neu", "microsatellite instability",
     "mismatch repair", "tumor mutational burden", "homologous recombination deficiency",
 ]
-# Specific alteration codes — always a biomarker wherever they appear.
+# Specific alteration codes, always a biomarker wherever they appear.
 VARIANT_CODES = [
     "V600E", "V600K", "T790M", "L858R", "C797S", "G12C", "G12D", "G12V", "G13D", "Q61K",
     "Q61R", "G719X", "S768I", "exon 19 deletion", "exon 20 insertion", "exon 14 skipping",
@@ -123,7 +123,7 @@ def train_head(base, texts, out_path, tag, steps=300, lr=5e-3, seed=0, log=print
         return
     torch.manual_seed(seed)
     d_model = base.model.tok.weight.shape[1]
-    # pre-featurize once (base is frozen) — keep only chunks that fit the context window
+    # pre-featurize once (base is frozen), keep only chunks that fit the context window
     samples = []
     pos = 0
     for t in texts:

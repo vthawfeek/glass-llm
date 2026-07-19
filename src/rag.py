@@ -1,4 +1,4 @@
-"""Transparent RAG retriever — a vector index over real trial chunks (with NCT IDs), embedded
+"""Transparent RAG retriever, a vector index over real trial chunks (with NCT IDs), embedded
 with OUR model. Cosine top-k, shown with scores. Same operation a vector DB (FAISS/Chroma)
 performs, kept transparent and dependency-free. Index is built offline and loaded from disk."""
 import json

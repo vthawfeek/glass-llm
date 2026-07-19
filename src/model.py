@@ -94,7 +94,7 @@ class GPT(nn.Module):
 
     def set_trace(self, flag):
         """Toggle attention-weight and per-sublayer contribution capture on every block
-        (tracing only — no effect on the forward math, so training/generation are untouched)."""
+        (tracing only, no effect on the forward math, so training/generation are untouched)."""
         for b in self.blocks:
             b.attn.store_attn = flag
             b.store_contrib = flag
