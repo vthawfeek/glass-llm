@@ -5,7 +5,7 @@ this repo's model code.
 
 Why not `transformers.AutoModel.from_pretrained(...)` or `safetensors.load_file(...)`: on this
 machine, BOTH crash with a Windows access violation at the identical site
-(torch/storage.py:471 `__getitem__`) when materializing the model weights — transformers' threaded
+(torch/storage.py:471 `__getitem__`) when materializing the model weights: transformers' threaded
 fast-loader (core_model_loading.py) and safetensors' own mmap-based reader hit the same fault.
 Root cause (confirmed): the machine runs under severe memory pressure (~1GB free of 8GB observed
 during development), and memory-mapping a 90MB weights file becomes unreliable under that pressure
