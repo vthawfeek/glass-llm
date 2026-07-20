@@ -33,7 +33,7 @@ model's real numbers. Hover the architecture diagram for the math at each step, 
 | 2 · Data volume (1 ⇄ 8 ⇄ 32 MB) | how much the model memorises vs. generalises |
 | 3 · Attention heads (4 ⇄ 8) | the attention heatmaps |
 | 4 · Fine-tuning (on/off) | adds a biomarker-tagging task head (a *mechanism* demo) |
-| 5 · Retrieval / RAG (on/off) | hallucination vs. grounding in real trials |
+| 5 · Retrieval / RAG (on/off) | hallucination vs. real trial chunks; an embedding-source toggle (MiniLM vs. our own model) shows retrieval relevance itself change |
 
 Two tabs: **🔬 Model explorer** (the five dials + tokenization, embeddings, attention, fine-tuning,
 generation, and an input-text→tokens→vectors→text Sankey) and **🔤 Tokenizer audit** (paste your
@@ -79,7 +79,12 @@ plainly as a demo.
 - **Fine-tune head** (`src/biomarker.py`): distant-supervision biomarker labels + a linear task
   head on the frozen model.
 - **RAG** (`src/rag.py`): transparent cosine vector index over 500 real trial chunks (same
-  operation FAISS/Chroma perform, kept visible).
+  operation FAISS/Chroma perform, kept visible). Two embedding sources over the same chunks:
+  our own model's pooled hidden state (never trained for topical similarity, so retrieval can
+  drift off-topic) and a from-scratch MiniLM encoder (`src/minilm.py`, pretrained
+  `sentence-transformers/all-MiniLM-L6-v2` weights run through a hand-written forward pass,
+  no `transformers` at runtime) trained specifically for sentence similarity. The dashboard
+  defaults to MiniLM and lets you compare both on the same query, side by side.
 
 ## Limitations
 
@@ -97,11 +102,13 @@ python src/fetch_data.py --area all --out pilot/data_dom --no-general   # Clinic
 # (build a generic English corpus into pilot/data_gen; see fetch_data.fetch_general)
 python src/build_zoo.py           # trains the tokenizer + 12-model zoo + biomarker heads + RAG index
 python src/warm_tokenizers.py     # cache GPT-4/GPT-2/BERT tokenizers for the offline audit
+python src/warm_minilm.py         # cache MiniLM weights for the RAG embedding-source comparison
+python src/build_minilm_index.py  # embed the RAG chunks with MiniLM (resumable, ~7 min on CPU)
 streamlit run app_v2.py
 ```
 
 Tests: `python tests/test_bpe.py` · `python tests/test_trace.py` · `python tests/test_biomarker.py`
-· `python tests/verify_app_v2.py`.
+· `python tests/test_minilm.py` · `python tests/test_rag_relevance.py` · `python tests/verify_app_v2.py`.
 
 _Built with references to nanoGPT (architecture) and minbpe (tokenizer). Prior interactive
 explainers: [Transformer Explainer](https://poloclub.github.io/transformer-explainer/)._

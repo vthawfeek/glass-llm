@@ -30,7 +30,15 @@ def set_knob(at, key, val):
     raise AssertionError(f"selectbox {key} not found")
 
 
-def run_combo(combo):
+def set_radio(at, key, val):
+    for r in at.radio:
+        if r.key == key:
+            r.set_value(val)
+            return
+    raise AssertionError(f"radio {key} not found")
+
+
+def run_combo(combo, embed_choice=None):
     dom, vol, heads, ft, rg = combo
     at = AppTest.from_file(str(ROOT / "app_v2.py"), default_timeout=180)
     at.run()
@@ -44,6 +52,14 @@ def run_combo(combo):
     at.run()
     if at.exception:
         return f"exception: {at.exception}"
+    if rg == "Yes" and embed_choice is not None:
+        try:
+            set_radio(at, "k_rag_embed", embed_choice)
+        except AssertionError as e:
+            return str(e)  # e.g. MiniLM index not built -- radio only has one option
+        at.run()
+        if at.exception:
+            return f"exception after embed_choice={embed_choice!r}: {at.exception}"
     return None
 
 
@@ -57,7 +73,17 @@ def main():
             print(f"FAIL  {label}\n      {err}")
         else:
             print(f"OK    {label}")
-    print(f"\n{len(COMBOS)-fails}/{len(COMBOS)} combinations rendered cleanly.")
+    # RAG embedding-source selector: exercise both branches explicitly on one combo
+    for choice in ["MiniLM (recommended)", "Our model (from-scratch)"]:
+        err = run_combo((DOM_D, MD, H4, "Yes", "Yes"), embed_choice=choice)
+        label = f"RAG embed source = {choice}"
+        if err:
+            fails += 1
+            print(f"FAIL  {label}\n      {err}")
+        else:
+            print(f"OK    {label}")
+    total = len(COMBOS) + 2
+    print(f"\n{total-fails}/{total} combinations rendered cleanly.")
     sys.exit(1 if fails else 0)
 
 

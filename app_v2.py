@@ -20,8 +20,8 @@ import plotly.graph_objects as go
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
-import bpe, model, glass, audit, rag, ui, ui2, biomarker
-for _n in ("bpe", "model", "glass", "audit", "rag", "ui", "ui2", "biomarker"):
+import bpe, model, glass, audit, rag, ui, ui2, biomarker, minilm
+for _n in ("bpe", "model", "glass", "audit", "rag", "ui", "ui2", "biomarker", "minilm"):
     importlib.reload(sys.modules[_n])
 GlassModel, WATERMARK = glass.GlassModel, glass.WATERMARK
 
@@ -36,7 +36,7 @@ PALETTE = ["#2e8b8b", "#d1495b", "#6a8d3f", "#c77d34", "#5b6bbf", "#9a5ba6",
 def _srcver():
     return max(os.path.getmtime(ROOT / "src" / f) for f in
                ("bpe.py", "model.py", "glass.py", "audit.py", "rag.py", "ui.py", "ui2.py",
-                "biomarker.py"))
+                "biomarker.py", "minilm.py"))
 SRCVER = _srcver()
 
 st.set_page_config(page_title="Glass-LLM · Clinical Trials", page_icon="🧬", layout="wide",
@@ -62,6 +62,14 @@ def load_tok(name, srcver):
 @st.cache_resource
 def load_rag(srcver):
     return rag.load_index(RAG_DIR) if rag.exists(RAG_DIR) else (None, None)
+
+@st.cache_resource
+def load_rag_minilm(srcver):
+    return rag.load_minilm_embeddings(RAG_DIR)
+
+@st.cache_resource
+def load_minilm_embedder(srcver):
+    return minilm.MiniLMEmbedder() if minilm.exists() else None
 
 @st.cache_data
 def pca3(tag, srcver):
@@ -479,16 +487,37 @@ with tab_a:
         st.caption(f"⚠️ {gen['watermark']}")
     else:
         explain("rag")
-        embs, chunks = load_rag(SRCVER)
-        if embs is None:
+        embs_self, chunks = load_rag(SRCVER)
+        embs_minilm = load_rag_minilm(SRCVER)
+        if embs_self is None:
             st.info("RAG index not built yet, it’s created at the end of the zoo build.")
         else:
             st.caption("Retrieval uses the **same prompt** from the top of the page, one input "
                        "drives every step. A topic/keyword prompt (a condition, drug, or biomarker) "
                        "retrieves best.")
+
+            has_minilm = embs_minilm is not None and minilm.exists()
+            embed_choice = st.radio(
+                "Embed the query with",
+                (["MiniLM (recommended)", "Our model (from-scratch)"] if has_minilm
+                 else ["Our model (from-scratch)"]),
+                horizontal=True, key="k_rag_embed",
+                help="Which vectors decide what counts as \"similar\". Our GPT was only ever "
+                     "trained to predict the next token, never to judge topical similarity, so "
+                     "its retrieval can drift off-topic (verified: see docs/rag_audit notes). "
+                     "MiniLM is a small model actually trained for sentence similarity, which is "
+                     "why it is the default.")
+            using_minilm = has_minilm and embed_choice.startswith("MiniLM")
+            if using_minilm:
+                with st.spinner("Loading MiniLM (~91MB, cached after first use)..."):
+                    embed_model = load_minilm_embedder(SRCVER)
+                embs = embs_minilm
+            else:
+                embed_model = load_model(RAG_EMBED_TAG, SRCVER) or g
+                embs = embs_self
+
             k = st.slider("retrieved trials (top-k)", 1, 8, 4,
                           help="How many nearest trial chunks to pull from the index.")
-            embed_model = load_model(RAG_EMBED_TAG, SRCVER) or g
             hits = rag.query(embed_model, embs, chunks, prompt, k=k)
             colL, colR = st.columns(2)
             with colL:
@@ -497,10 +526,33 @@ with tab_a:
                 output_box(out["text"], tint="#d1495b")
                 st.caption("⚠️ Invented, plausible-sounding specifics (hallucination).")
             with colR:
-                st.markdown("##### ✅ With retrieval, grounded in real trials")
+                st.markdown("##### 🔎 With retrieval, real trial chunks")
                 for nct, text, score in hits:
                     st.markdown(f"**[{nct}]** · similarity `{score:.3f}`")
                     st.caption(text[:200] + ("…" if len(text) > 200 else ""))
+                st.caption("⚠️ Real records with real NCT IDs, but relevance depends on the "
+                           "embedding chosen above, not a guarantee these are the best match.")
+
+            if has_minilm:
+                with st.expander("🔬 See why the embedding source matters (same query, both ways)"):
+                    st.caption("Same prompt, same index of 5,960 real trial chunks, two different "
+                               "ways of turning text into vectors. This is the actual retrieval "
+                               "step every RAG system depends on, made visible side by side.")
+                    self_model = load_model(RAG_EMBED_TAG, SRCVER) or g
+                    mini_model = load_minilm_embedder(SRCVER)
+                    hits_self = rag.query(self_model, embs_self, chunks, prompt, k=k)
+                    hits_mini = rag.query(mini_model, embs_minilm, chunks, prompt, k=k)
+                    cL, cR = st.columns(2)
+                    with cL:
+                        st.markdown("**Our model's own embedding**")
+                        for nct, text, score in hits_self:
+                            st.markdown(f"[{nct}] · `{score:.3f}`")
+                            st.caption(text[:150] + ("…" if len(text) > 150 else ""))
+                    with cR:
+                        st.markdown("**MiniLM embedding**")
+                        for nct, text, score in hits_mini:
+                            st.markdown(f"[{nct}] · `{score:.3f}`")
+                            st.caption(text[:150] + ("…" if len(text) > 150 else ""))
             with st.expander("See the assembled grounded prompt"):
                 st.code(rag.build_grounded_prompt(prompt, hits))
             st.caption(f"⚠️ {WATERMARK}")

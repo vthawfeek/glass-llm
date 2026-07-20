@@ -74,3 +74,10 @@ def build_grounded_prompt(question, hits):
 def exists(out_dir=RAG_DIR):
     out_dir = Path(out_dir)
     return (out_dir / "embeddings.npy").exists() and (out_dir / "chunks.json").exists()
+
+
+def load_minilm_embeddings(out_dir=RAG_DIR):
+    """The same chunks, embedded with MiniLM instead of the model's own pooled hidden state.
+    Shares chunks.json with the self-embedding index (chunking is independent of embedder)."""
+    p = Path(out_dir) / "embeddings_minilm.npy"
+    return np.load(p) if p.exists() else None

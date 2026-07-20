@@ -95,8 +95,13 @@ EXPLAIN = {
                "a stored index of real trial chunks, the same nearest-neighbour operation a "
                "vector database (FAISS, Chroma) performs. The best matches, with their NCT IDs, "
                "become context. **Left:** the model alone invents a plausible but fake trial. "
-               "**Right:** grounded in retrieved real records. This is why RAG reduces "
-               "hallucination.",
+               "**Right:** real trial chunks, whichever ones the chosen embedding ranks closest. "
+               "Which vectors you search with changes what counts as \"closest\": our from-scratch "
+               "model was only ever trained to predict the next token, never to judge topical "
+               "similarity, so its retrieval can drift off-topic; MiniLM was trained specifically "
+               "for sentence similarity, which is why it is the default. Try the embedding-source "
+               "control below to watch retrieval quality change with no other setting touched, "
+               "that is the actual mechanism RAG depends on, made visible.",
     },
 }
 
