@@ -1,26 +1,21 @@
-<!-- DRAFT. The launch post. Gate: model size + mechanism not intelligence; cost/context = fact,
-quality = flag; prior art; SYNTHETIC watermark; no medical advice; live link works before posting.
-Attach (upload as NATIVE VIDEO, not a link): demo_media/square/00_launch_reel_63s.mp4 (1:1, best for mobile; use demo_media/mp4/00_launch_reel_63s.mp4 landscape only if your audience is desktop-heavy). The 63s reel: black box -> tokenizer -> memorise/generalise -> attention -> hallucinate-vs-ground -> live link. Alt single clip: square/07_rag_hallucinate_vs_ground.mp4. -->
+<!-- DRAFT for your review. Series post 4 (feature 4: sounding fluent is not the same as learning). PLAIN-ENGLISH rewrite for a general audience. Gate: model size; mechanism not intelligence; not medical; the ranking matches repo (exact scores are in the blog). Attach (upload as NATIVE VIDEO, not a link): demo_media/square/03_data_volume_memorise_vs_generalise.mp4 (1:1, the score flipping good<->bad as the amount of text changes). -->
 
-No product this time, 𝗷𝘂𝘀𝘁 𝘁𝗵𝗲 𝗽𝗮𝗿𝘁𝘀 𝗹𝗮𝗶𝗱 𝗯𝗮𝗿𝗲. 𝗪𝗮𝘁𝗰𝗵 𝗮 𝗹𝗮𝗻𝗴𝘂𝗮𝗴𝗲 𝗺𝗼𝗱𝗲𝗹 𝗶𝗻𝘃𝗲𝗻𝘁 𝗮 𝗰𝗹𝗶𝗻𝗶𝗰𝗮𝗹 𝘁𝗿𝗶𝗮𝗹, 𝘁𝗵𝗲𝗻 𝘄𝗮𝘁𝗰𝗵 𝗿𝗲𝘁𝗿𝗶𝗲𝘃𝗮𝗹 𝘀𝘁𝗼𝗽 𝗶𝘁. Live, in a glass box.
+I trained the same tiny AI twice. Once on a small amount of medical text, and once on 32 times as much. 𝗧𝗵𝗲 𝗼𝗻𝗲 𝘁𝗵𝗮𝘁 𝗿𝗲𝗮𝗱 𝗹𝗲𝘀𝘀 𝗮𝗰𝘁𝘂𝗮𝗹𝗹𝘆 𝘀𝗼𝘂𝗻𝗱𝗲𝗱 𝗯𝗲𝘁𝘁𝗲𝗿. 𝗧𝗵𝗮𝘁 𝗶𝘀 𝘁𝗵𝗲 𝘁𝗿𝗮𝗽.
 
-For the last few weeks I've been building a language model on clinical-trial text 𝗳𝗿𝗼𝗺 𝘀𝗰𝗿𝗮𝘁𝗰𝗵: my own BPE tokenizer, my own transformer, about 1.3M parameters. 𝗡𝗼𝘁 𝘁𝗼 𝗺𝗮𝗸𝗲 𝗶𝘁 𝘀𝗺𝗮𝗿𝘁, 𝗯𝘂𝘁 𝘁𝗼 𝗺𝗮𝗸𝗲 𝗶𝘁 𝘁𝗿𝗮𝗻𝘀𝗽𝗮𝗿𝗲𝗻𝘁. It's live now, and you can click through every step.
+Its sentences came out clean and confident, the kind of thing you would read and think "great, this one is the winner."
 
-Try it: https://glass-llm.streamlit.app
+It was not. 𝗪𝗶𝘁𝗵 𝘀𝗼 𝗹𝗶𝘁𝘁𝗹𝗲 𝘁𝗼 𝗿𝗲𝗮𝗱, 𝗶𝘁 𝘀𝗶𝗺𝗽𝗹𝘆 𝗺𝗲𝗺𝗼𝗿𝗶𝘀𝗲𝗱 𝗶𝘁𝘀 𝗳𝗲𝘄 𝗲𝘅𝗮𝗺𝗽𝗹𝗲𝘀 𝗮𝗻𝗱 𝗿𝗲𝗽𝗲𝗮𝘁𝗲𝗱 𝘁𝗵𝗲𝗺 𝗯𝗮𝗰𝗸. It was not really writing, it was reciting. So the moment I tested it on medical text it had never seen, 𝗶𝘁 𝗱𝗶𝗱 𝘁𝗵𝗲 𝘄𝗼𝗿𝘀𝘁 𝗼𝗳 𝘁𝗵𝗲 𝗹𝗼𝘁, 𝗯𝘆 𝗮 𝗰𝗹𝗲𝗮𝗿 𝗺𝗮𝗿𝗴𝗶𝗻.
 
-𝗙𝗶𝘃𝗲 𝗰𝗼𝗻𝘁𝗿𝗼𝗹𝘀 (data domain, data volume, attention heads, fine-tuning, retrieval) each reshape the model in front of you. Every dial shows its effect as a 𝗯𝗲𝗳𝗼𝗿𝗲-𝗮𝗻𝗱-𝗮𝗳𝘁𝗲𝗿, not just a re-render, and you can 𝘀𝘁𝗲𝗽 𝘁𝗵𝗲 𝗴𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝗼𝗻 𝗼𝗻𝗲 𝘁𝗼𝗸𝗲𝗻 𝗮𝘁 𝗮 𝘁𝗶𝗺𝗲 as the temperature sharpens or flattens the odds. Two things I'm most pleased with, because they're honest about the limits.
+Here is the whole lesson in one line: 𝘀𝗼𝘂𝗻𝗱𝗶𝗻𝗴 𝗳𝗹𝘂𝗲𝗻𝘁 𝗶𝘀 𝗻𝗼𝘁 𝘁𝗵𝗲 𝘀𝗮𝗺𝗲 𝗮𝘀 𝗵𝗮𝘃𝗶𝗻𝗴 𝗮𝗰𝘁𝘂𝗮𝗹𝗹𝘆 𝗹𝗲𝗮𝗿𝗻𝗲𝗱. An AI that has memorised its material will look great in a quick demo and fall apart on anything new.
 
-𝗛𝗮𝗹𝗹𝘂𝗰𝗶𝗻𝗮𝘁𝗶𝗼𝗻 𝘃𝘀 𝗴𝗿𝗼𝘂𝗻𝗱𝗶𝗻𝗴. Give the model a topic and it will write a 𝗳𝗹𝘂𝗲𝗻𝘁, 𝗰𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗹𝘆 𝗶𝗻𝘃𝗲𝗻𝘁𝗲𝗱 𝘁𝗿𝗶𝗮𝗹. Turn on retrieval and the panel 𝗿𝗲𝗯𝘂𝗶𝗹𝗱𝘀 𝘁𝗵𝗲 𝗮𝗻𝘀𝘄𝗲𝗿 𝗳𝗿𝗼𝗺 𝗿𝗲𝗮𝗹 𝘁𝗿𝗶𝗮𝗹𝘀, shown with their NCT IDs and similarity scores. A model this small can't synthesise grounded prose, so the panel shows the 𝗺𝗲𝗰𝗵𝗮𝗻𝗶𝘀𝗺 of grounding and says as much.
+And this bites hardest exactly where it matters most, 𝘄𝗵𝗲𝗻 𝘁𝗵𝗲𝗿𝗲 𝗶𝘀 𝗻𝗼𝘁 𝗺𝘂𝗰𝗵 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻 𝘁𝗼 𝗯𝗲𝗴𝗶𝗻 𝘄𝗶𝘁𝗵, like a rare disease, a brand-new treatment, or a single hospital's records.
 
-𝗙𝗶𝗻𝗲-𝘁𝘂𝗻𝗶𝗻𝗴, 𝗵𝗼𝗻𝗲𝘀𝘁𝗹𝘆. I tried to fine-tune it to extract biomarkers (EGFR, PD-L1, HER2). 𝗜𝘁 𝗰𝗮𝗻'𝘁. Structured biomarker extraction is a task where the state of the art is 𝗳𝗶𝗻𝗲-𝘁𝘂𝗻𝗲𝗱 𝟳𝗕-𝗽𝗮𝗿𝗮𝗺𝗲𝘁𝗲𝗿 𝗺𝗼𝗱𝗲𝗹𝘀 (Alkhoury et al., npj Digital Medicine 2025). So the dashboard shows a fine-tuned task head tagging biomarker mentions, 𝗹𝗮𝗯𝗲𝗹𝗹𝗲𝗱 𝗰𝗹𝗲𝗮𝗿𝗹𝘆 𝗮𝘀 𝗮 𝗱𝗲𝗺𝗼 rather than an extractor.
+(The exact test scores are in the write-up, linked in the comments.)
 
-Everything it generates is watermarked 𝗦𝗬𝗡𝗧𝗛𝗘𝗧𝗜𝗖 𝗮𝗻𝗱 𝗶𝘀 𝗻𝗼𝘁 𝗺𝗲𝗱𝗶𝗰𝗮𝗹 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻. Interactive LLM explainers already exist; Transformer Explainer is a good one. What's new here is the 𝘄𝗵𝗼𝗹𝗲 𝗽𝗶𝗽𝗲𝗹𝗶𝗻𝗲 (data, architecture, fine-tuning, retrieval) on clinical-trial text, with 𝗲𝘃𝗲𝗿𝘆 𝗻𝘂𝗺𝗯𝗲𝗿 𝗿𝗲𝗽𝗿𝗼𝗱𝘂𝗰𝗶𝗯𝗹𝗲.
+The AI here is tiny and see-through, and everything it writes is made up and is not medical advice.
 
-Feedback from people who work in this area is exactly what I'm after.
+#AI #MachineLearning #LLM #DataScience
 
-#MachineLearning #LLM #NLP #DrugDiscovery #RAG
-
-<!-- First comment (per plan, lines 66-69): body carries only the live-demo link; blog + code go in your own first comment. Pin this post to your profile. -->
+<!-- First comment: keep the body link-free; write-up link here. Live-app link is held for the launch (post 6). -->
 First comment:
-Write-up: https://rokpayprsizors.wordpress.com/2026/07/17/a-glass-box-for-clinical-trial-language-models-five-controls-every-step-visible/
-Code: https://github.com/vthawfeek/glass-llm
+Full write-up: https://rokpayprsizors.wordpress.com/2026/07/17/two-things-a-1-3-million-parameter-clinical-language-model-taught-me/
