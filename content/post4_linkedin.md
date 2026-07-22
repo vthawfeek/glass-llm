@@ -1,5 +1,7 @@
 <!-- DRAFT for your review. Series post 4 (feature 4: sounding fluent is not the same as learning). PLAIN-ENGLISH rewrite for a general audience. Gate: model size; mechanism not intelligence; not medical; the ranking matches repo (exact scores are in the blog). Attach (upload as NATIVE VIDEO, not a link): demo_media/square/03_data_volume_memorise_vs_generalise.mp4 (1:1, the score flipping good<->bad as the amount of text changes). -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 4 of 6 · Fluent isn't the same as learned
+
 I trained the same tiny AI twice. Once on a small amount of medical text, and once on 32 times as much. 𝗧𝗵𝗲 𝗼𝗻𝗲 𝘁𝗵𝗮𝘁 𝗿𝗲𝗮𝗱 𝗹𝗲𝘀𝘀 𝗮𝗰𝘁𝘂𝗮𝗹𝗹𝘆 𝘀𝗼𝘂𝗻𝗱𝗲𝗱 𝗯𝗲𝘁𝘁𝗲𝗿. 𝗧𝗵𝗮𝘁 𝗶𝘀 𝘁𝗵𝗲 𝘁𝗿𝗮𝗽.
 
 Its sentences came out clean and confident, the kind of thing you would read and think "great, this one is the winner."

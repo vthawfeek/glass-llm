@@ -1,5 +1,7 @@
 <!-- DRAFT for your review. Series post 2 (feature 2: how AI chops up text). PLAIN-ENGLISH rewrite for a general audience. The controlled point is like-for-like, medical-trained vs general; the GPT-4 nuance is post 3. Gate: cost/context = fact; no "always wins" overclaim; numbers match repo (27 vs 43 is the clip; 30 vs 55 is a real line); not medical. Attach (upload as NATIVE VIDEO, not a link): demo_media/square/02_tokenizer_clinical_vs_english.mp4 (1:1, the same sentence, 27 vs 43, pieces shattering). -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 2 of 6 · How AI chops up your text
+
 Before any AI understands your text, it first chops it into small pieces. Most people never see this step, but 𝗶𝘁 𝗾𝘂𝗶𝗲𝘁𝗹𝘆 𝗰𝗼𝘀𝘁𝘀 𝘆𝗼𝘂 𝗺𝗼𝗻𝗲𝘆 𝗮𝗻𝗱 𝘀𝗽𝗮𝗰𝗲.
 
 Here is why it matters. 𝗬𝗼𝘂 𝗽𝗮𝘆 𝗯𝘆 𝘁𝗵𝗲 𝗽𝗶𝗲𝗰𝗲, 𝗮𝗻𝗱 𝘁𝗵𝗲 𝗔𝗜 𝗰𝗮𝗻 𝗼𝗻𝗹𝘆 𝗵𝗼𝗹𝗱 𝘀𝗼 𝗺𝗮𝗻𝘆 𝗽𝗶𝗲𝗰𝗲𝘀 𝗮𝘁 𝗼𝗻𝗰𝗲. More pieces means a bigger bill and less room for your actual question.

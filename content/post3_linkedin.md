@@ -1,5 +1,7 @@
 <!-- DRAFT for your review. Series post 3 (feature 3: how GPT-4 sees a drug name). PLAIN-ENGLISH rewrite for a general audience. Gate: cost/context = fact, quality = flag; GPT-4 is competitive (NO "beats GPT-4"); prior art (PubMedBERT) in the first comment for advanced readers; not medical. Attach (upload as NATIVE VIDEO, not a link): demo_media/square/08_tokenizer_audit_vs_gpt4.mp4 (1:1, the term-by-term comparison vs GPT-4/4o/2/BERT). -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 3 of 6 · How GPT-4 reads a drug name
+
 To the AI you use, the cancer drug "pembrolizumab" is not one word. 𝗚𝗣𝗧-𝟰 𝘀𝗲𝗲𝘀 𝗶𝘁 𝗮𝘀 𝘀𝗶𝘅 𝗹𝗶𝘁𝘁𝗹𝗲 𝗳𝗿𝗮𝗴𝗺𝗲𝗻𝘁𝘀: 𝗽, 𝗲𝗺𝗯, 𝗿𝗼𝗹, 𝗶𝘇, 𝘂𝗺, 𝗮𝗯.
 
 Remember, more fragments means more cost and less room. So on unusual words like drug names and gene names, 𝘀𝗽𝗲𝗰𝗶𝗮𝗹𝗶𝘀𝘁 𝘁𝗲𝘅𝘁 𝗰𝗮𝗻 𝗾𝘂𝗶𝗲𝘁𝗹𝘆 𝗴𝗲𝘁 𝗲𝘅𝗽𝗲𝗻𝘀𝗶𝘃𝗲.

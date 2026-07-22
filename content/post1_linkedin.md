@@ -1,5 +1,7 @@
 <!-- DRAFT for your review. Series post 1 (feature 1: open the black box). PLAIN-ENGLISH rewrite for a general audience (people who use AI day to day); depth is left for the blog. Gate: model size stated + mechanism not intelligence; prior art nodded (plainly); SYNTHETIC / not medical. Attach (upload as NATIVE VIDEO, not a link): demo_media/square/01_pipeline_no_black_box.mp4 (1:1, the whole flow, no black box). -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 1 of 6 · An AI you can see through
+
 When you use an AI like ChatGPT, you can't see what happens between your question and its answer. 𝗦𝗼 𝗜 𝗯𝘂𝗶𝗹𝘁 𝗮 𝘀𝗺𝗮𝗹𝗹 𝗔𝗜 𝘆𝗼𝘂 𝗰𝗮𝗻 𝘀𝗲𝗲 𝘀𝘁𝗿𝗮𝗶𝗴𝗵𝘁 𝘁𝗵𝗿𝗼𝘂𝗴𝗵.
 
 It writes text about medical studies, and I put it behind a simple screen where 𝘆𝗼𝘂 𝘄𝗮𝘁𝗰𝗵 𝗲𝘃𝗲𝗿𝘆 𝘀𝘁𝗲𝗽 𝗶𝘁 𝘁𝗮𝗸𝗲𝘀, 𝗮𝗻𝗱 𝗰𝗵𝗮𝗻𝗴𝗲 𝗵𝗼𝘄 𝗶𝘁 𝘄𝗼𝗿𝗸𝘀 𝘄𝗶𝘁𝗵 𝗮 𝗳𝗲𝘄 𝘀𝘄𝗶𝘁𝗰𝗵𝗲𝘀.

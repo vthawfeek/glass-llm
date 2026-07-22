@@ -1,5 +1,7 @@
 <!-- DRAFT. Series post 6: the launch / final summary (the finale after the 5 feature posts 1-5). PLAIN-ENGLISH rewrite for a general audience. Gate: model size + mechanism not intelligence; cost/context = fact, quality = flag; prior art nodded (plainly); SYNTHETIC; not medical; live link works before posting. Attach (upload as NATIVE VIDEO, not a link): demo_media/square/00_launch_reel_63s.mp4 (1:1, best for mobile; use demo_media/mp4/00_launch_reel_63s.mp4 landscape only for a desktop-heavy audience). Alt single clip: square/07_rag_hallucinate_vs_ground.mp4. -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 6 of 6 · It's live, try it yourself
+
 For the last few weeks I have been building a small AI you can see straight through, and 𝗶𝘁 𝗶𝘀 𝗹𝗶𝘃𝗲 𝗻𝗼𝘄 𝗳𝗼𝗿 𝗮𝗻𝘆𝗼𝗻𝗲 𝘁𝗼 𝘁𝗿𝘆.
 
 Try it: https://glass-llm.streamlit.app

@@ -1,5 +1,7 @@
 <!-- DRAFT for your review. Series post 5 (feature 6: it makes things up, then grounds them). PLAIN-ENGLISH rewrite for a general audience. Gate: model size; grounding shown as a mechanism, not a Q&A service; real records with ID numbers; not medical. Attach (upload as NATIVE VIDEO, not a link): demo_media/square/07_rag_hallucinate_vs_ground.mp4 (1:1, invented vs grounded in real trials with ID numbers). -->
 
+𝗛𝗼𝗺𝗲-𝗺𝗮𝗱𝗲 𝗚𝗹𝗮𝘀𝘀 𝗟𝗟𝗠 · Post 5 of 6 · When AI makes things up
+
 Ask my tiny AI about a health condition and it will confidently write up a 𝗰𝗼𝗺𝗽𝗹𝗲𝘁𝗲, 𝗯𝗲𝗹𝗶𝗲𝘃𝗮𝗯𝗹𝗲 𝗺𝗲𝗱𝗶𝗰𝗮𝗹 𝘀𝘁𝘂𝗱𝘆 𝘁𝗵𝗮𝘁 𝗻𝗲𝘃𝗲𝗿 𝗲𝘅𝗶𝘀𝘁𝗲𝗱. It simply makes it up.
 
 Then I flip one switch. 𝗜𝗻𝘀𝘁𝗲𝗮𝗱 𝗼𝗳 𝗮𝗻𝘀𝘄𝗲𝗿𝗶𝗻𝗴 𝗳𝗿𝗼𝗺 𝗺𝗲𝗺𝗼𝗿𝘆, 𝗶𝘁 𝗳𝗶𝗿𝘀𝘁 𝗹𝗼𝗼𝗸𝘀 𝘁𝗵𝗶𝗻𝗴𝘀 𝘂𝗽 𝗶𝗻 𝗮 𝗰𝗼𝗹𝗹𝗲𝗰𝘁𝗶𝗼𝗻 𝗼𝗳 𝟱𝟬𝟬 𝗿𝗲𝗮𝗹 𝘀𝘁𝘂𝗱𝗶𝗲𝘀. Now the answer is rebuilt from genuine records, each shown with its official ID number so you can check it.
