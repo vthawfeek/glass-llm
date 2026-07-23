@@ -6,7 +6,7 @@ To the AI you use, the cancer drug "pembrolizumab" is not one word. 𝗚𝗣𝗧
 
 Remember, more fragments means more cost and less room. So on unusual words like drug names and gene names, 𝘀𝗽𝗲𝗰𝗶𝗮𝗹𝗶𝘀𝘁 𝘁𝗲𝘅𝘁 𝗰𝗮𝗻 𝗾𝘂𝗶𝗲𝘁𝗹𝘆 𝗴𝗲𝘁 𝗲𝘅𝗽𝗲𝗻𝘀𝗶𝘃𝗲.
 
-But here is the part people get wrong. "𝗔 𝘀𝗽𝗲𝗰𝗶𝗮𝗹𝗶𝘀𝘁 𝘁𝗼𝗼𝗹 𝗮𝗹𝘄𝗮𝘆𝘀 𝘄𝗶𝗻𝘀" 𝗶𝘀 𝗻𝗼𝘁 𝘁𝗿𝘂𝗲. GPT-4's built-in word list is huge, and on a mixed batch of 90 tricky terms it was basically neck and neck with my medical version (about 4.2 fragments per term against my 4.9). A big word list buys back most of the advantage, so I would never claim this "beats GPT-4."
+But here is the part people get wrong. "𝗔 𝘀𝗽𝗲𝗰𝗶𝗮𝗹𝗶𝘀𝘁 𝘁𝗼𝗼𝗹 𝗮𝗹𝘄𝗮𝘆𝘀 𝘄𝗶𝗻𝘀" 𝗶𝘀 𝗻𝗼𝘁 𝘁𝗿𝘂𝗲. GPT-4's built-in word list is huge, and on a mixed batch of 87 tricky terms it was basically neck and neck with my medical version (about 3.8 fragments per term against my 4.3). A big word list buys back most of the advantage, so I would never claim this "beats GPT-4."
 
 And one more honest point. 𝗟𝗼𝘁𝘀 𝗼𝗳 𝗳𝗿𝗮𝗴𝗺𝗲𝗻𝘁𝘀 𝗶𝘀 𝗮 𝘆𝗲𝗹𝗹𝗼𝘄 𝗳𝗹𝗮𝗴, 𝗻𝗼𝘁 𝗮 𝘃𝗲𝗿𝗱𝗶𝗰𝘁. It is a reason to double-check the AI on rare, exact terms. It is not proof the AI understands the word worse, because big models cope with it surprisingly well.
 

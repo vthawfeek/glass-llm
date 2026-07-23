@@ -56,12 +56,18 @@ tokenizer (vocab 4,096), **6** with GPT-4's (`p·emb·rol·iz·um·ab`), 5 with 
 
 - **Cost & context are facts.** A full eligibility criterion: **30 tokens (domain) vs 55 (general)**
   at equal vocab size — cheaper, more usable context.
-- **"Domain always wins" is false.** GPT-4's 100k+ vocab is competitive (**4.22** tokens/term vs
-  **4.94** on the 90-term probe set in `pilot/probe_terms.txt`). The clean win is domain-vs-general
+- **"Domain always wins" is false.** GPT-4's 100k+ vocab is competitive (**3.80** tokens/term vs
+  **4.25** on the 87-term probe set in `pilot/probe_terms.txt`). The clean win is domain-vs-general
   *at equal vocab* (~20–45% fewer), **not** "beats GPT-4."
 - **Quality is a flag, not a verdict** — a risk to test for rare/exact-match terms, not proof of
   worse understanding. (This is why [PubMedBERT](https://arxiv.org/abs/2007.15779) trained its own
   vocabulary; trade-offs in the [tokenizer literature](https://arxiv.org/abs/2310.08754).)
+
+The GPT-4 numbers are OpenAI's real [`tiktoken`](https://github.com/openai/tiktoken) encodings (`cl100k_base` / `o200k_base`), not estimates. Reproduce the GPT-4-vs-domain pair offline from the cached vocab (prints `n=87 GPT-4 3.8 domain 4.25`):
+
+```bash
+python -c "import sys;sys.path.insert(0,'src');import os;os.environ['TIKTOKEN_CACHE_DIR']='assets/tiktoken_cache';import tiktoken;from bpe import BPETokenizer;g=tiktoken.get_encoding('cl100k_base');d=BPETokenizer.load('pilot/tokenizers/dom_4096.json');t=[l.strip() for l in open('pilot/probe_terms.txt',encoding='utf-8') if l.strip() and not l.startswith('#')];import statistics as s;print('n='+str(len(t)),'GPT-4',round(s.mean(len(g.encode(x)) for x in t),2),'domain',round(s.mean(len(d.encode(x)) for x in t),2))"
+```
 
 **Fine-tuning is a mechanism, not an extractor.** A 1.3M model cannot do structured biomarker
 extraction — the state of the art is fine-tuned ~7B models

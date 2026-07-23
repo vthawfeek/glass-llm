@@ -27,7 +27,7 @@ pilot/rag/
 pilot/RESULTS.md
 pilot/models/
 pilot/results/
-pilot/probe_terms.txt
+# NB: pilot/probe_terms.txt IS shipped — README/blog cite the GPT-4-vs-domain figures computed from it.
 src/analyze.py
 src/fertility.py
 src/build_model.py

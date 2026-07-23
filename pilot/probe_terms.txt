@@ -1,0 +1,90 @@
+# Curated probe set for tokenizer fertility analysis (one term per line).
+# Groups: monoclonal antibodies (-mab), kinase inhibitors (-tinib), other INN stems,
+# gene symbols, variant notation, and stock eligibility phrases.
+pembrolizumab
+nivolumab
+atezolizumab
+durvalumab
+trastuzumab
+bevacizumab
+rituximab
+cetuximab
+ipilimumab
+daratumumab
+imatinib
+erlotinib
+gefitinib
+osimertinib
+dasatinib
+nilotinib
+sunitinib
+sorafenib
+lapatinib
+ibrutinib
+losartan
+valsartan
+candesartan
+atorvastatin
+rosuvastatin
+simvastatin
+omeprazole
+pantoprazole
+esomeprazole
+acyclovir
+valacyclovir
+oseltamivir
+palbociclib
+ribociclib
+abemaciclib
+carboplatin
+cisplatin
+oxaliplatin
+doxorubicin
+paclitaxel
+docetaxel
+gemcitabine
+capecitabine
+fluorouracil
+methotrexate
+cyclophosphamide
+temozolomide
+lenalidomide
+pomalidomide
+BRAF
+EGFR
+TP53
+KRAS
+ALK
+HER2
+PIK3CA
+PTEN
+BRCA1
+BRCA2
+MET
+ROS1
+NTRK
+PD-L1
+V600E
+T790M
+L858R
+G12C
+exon 19 deletion
+ECOG performance status
+Eastern Cooperative Oncology Group
+estimated glomerular filtration rate
+absolute neutrophil count
+left ventricular ejection fraction
+informed consent
+measurable disease per RECIST
+histologically confirmed
+adequate organ function
+life expectancy
+prior systemic therapy
+adverse events
+progression-free survival
+overall survival
+maximum tolerated dose
+dose-limiting toxicity
+hepatic impairment
+renal insufficiency
+childbearing potential
